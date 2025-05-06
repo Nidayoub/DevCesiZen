@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "title": "Bienvenue sur CESIZen",
+      "slug": "accueil",
+      "content": "\n# Bienvenue sur CESIZen\n\nCESIZen est une application dédiée au bien-être et à la gestion du stress.\n\n## Fonctionnalités principales\n\n- **Diagnostic de stress** : Évaluez votre niveau de stress avec l'échelle de Holmes et Rahe\n- **Ressources** : Découvrez des techniques de respiration, méditation et gestion du stress\n- **Suivi** : Suivez l'évolution de votre niveau de stress dans le temps\n\nN'hésitez pas à explorer les différentes sections de l'application !\n        ",
+      "isPublished": true,
+      "authorId": 1,
+      "createdAt": "2025-04-20T21:58:47.099Z",
+      "updatedAt": "2025-04-20T21:58:47.099Z",
+      "id": 1
+    },
+    {
+      "title": "Techniques de respiration",
+      "slug": "respiration",
+      "content": "\n# Techniques de respiration pour réduire le stress\n\nLa respiration est l'un des outils les plus puissants pour gérer le stress. Voici quelques techniques simples :\n\n## 1. Respiration abdominale\n\n1. Asseyez-vous confortablement ou allongez-vous\n2. Posez une main sur votre ventre\n3. Inspirez lentement par le nez pendant 4 secondes, sentez votre ventre se gonfler\n4. Retenez votre souffle pendant 1-2 secondes\n5. Expirez lentement par la bouche pendant 6 secondes\n6. Répétez 5-10 fois\n\n## 2. Respiration 4-7-8\n\n1. Inspirez par le nez pendant 4 secondes\n2. Retenez votre souffle pendant 7 secondes\n3. Expirez par la bouche pendant 8 secondes\n4. Répétez 4 fois\n\nPratiquez ces techniques quelques minutes chaque jour pour en ressentir les bénéfices.\n        ",
+      "isPublished": true,
+      "authorId": 1,
+      "createdAt": "2025-04-20T21:58:47.099Z",
+      "updatedAt": "2025-04-20T21:58:47.099Z",
+      "id": 2
+    },
+    {
+      "title": "Méditation de pleine conscience",
+      "slug": "meditation",
+      "content": "\n# Méditation de pleine conscience\n\nLa méditation de pleine conscience est une pratique qui consiste à porter son attention sur le moment présent, sans jugement.\n\n## Exercice simple de 5 minutes\n\n1. Asseyez-vous confortablement, dos droit\n2. Fermez les yeux ou gardez-les mi-clos\n3. Concentrez-vous sur votre respiration naturelle\n4. Remarquez les sensations à chaque inspiration et expiration\n5. Quand votre esprit s'égare (ce qui est normal), ramenez doucement votre attention à la respiration\n6. Après 5 minutes, prenez conscience de votre corps entier, puis ouvrez lentement les yeux\n\n## Conseils pour débutants\n\n- Commencez par 5 minutes par jour, puis augmentez progressivement\n- La régularité est plus importante que la durée\n- N'essayez pas d'arrêter vos pensées, observez-les simplement passer\n        ",
+      "isPublished": true,
+      "authorId": 1,
+      "createdAt": "2025-04-20T21:58:47.100Z",
+      "updatedAt": "2025-04-20T21:58:47.100Z",
+      "id": 3
+    }
+  ],
+  "autoIncrement": 4
+}

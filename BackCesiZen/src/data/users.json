@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "email": "admin@cesizen.fr",
+      "username": "admin",
+      "password": "$argon2id$v=19$m=65536,t=2,p=1$x2o1QYswz5R2n0ZwKMXdCLdYg+PmNmVLBiZ9ORZzgKE$XzzvB3jelAkNLo2mFqv/X5zrENa0gf9I47dGpEcNrw8",
+      "isAdmin": true,
+      "createdAt": "2025-04-20T21:58:47.085Z",
+      "updatedAt": "2025-04-20T21:58:47.085Z",
+      "id": 1
+    }
+  ],
+  "autoIncrement": 2
+}
