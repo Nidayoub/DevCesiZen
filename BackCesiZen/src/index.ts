@@ -11,6 +11,17 @@ console.log("📦 Base de données initialisée avec succès");
 // Initialisation des données si nécessaire
 import "./utils/initData";
 
+// Configuration CORS
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "http://localhost:3001",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Max-Age": "86400" // 24 heures
+};
+
+const PORT = 3000;
+
 const server = serve({
   async fetch(req) {
     const url = new URL(req.url);
@@ -20,16 +31,47 @@ const server = serve({
     // Log de la requête
     logger(method, path);
     
+    // Gestion des requêtes OPTIONS (preflight CORS)
+    if (method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
+    }
+    
     try {
       // On transmet la requête au router
       const response = await router(req);
-      return response;
+      
+      // Ajout des headers CORS à la réponse
+      const newHeaders = new Headers(response.headers);
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        newHeaders.set(key, value);
+      });
+      
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
+      });
     } catch (error) {
       // Gestion des erreurs
-      return errorHandler(error);
+      const errorResponse = errorHandler(error);
+      
+      // Ajout des headers CORS à la réponse d'erreur
+      const newHeaders = new Headers(errorResponse.headers);
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        newHeaders.set(key, value);
+      });
+      
+      return new Response(errorResponse.body, {
+        status: errorResponse.status,
+        statusText: errorResponse.statusText,
+        headers: newHeaders
+      });
     }
   },
-  port: process.env.PORT || 3000,
+  port: PORT,
 });
 
-console.log(`🚀 Serveur CESIZen démarré sur ${server.url}`); 
+console.log(`🚀 Serveur CESIZen démarré sur http://localhost:${PORT}`); 

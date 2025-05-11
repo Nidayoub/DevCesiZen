@@ -335,7 +335,191 @@
       "category": "Personnel",
       "order": 42,
       "id": 42
+    },
+    {
+      "title": "Échec à un examen important",
+      "description": "Non-obtention d'un diplôme ou certification attendue",
+      "points": 45,
+      "category": "Personnel",
+      "order": 43,
+      "id": 43
+    },
+    {
+      "title": "Déménagement à l'étranger",
+      "description": "Expatriation dans un nouveau pays",
+      "points": 42,
+      "category": "Personnel",
+      "order": 44,
+      "id": 44
+    },
+    {
+      "title": "Problèmes avec les voisins",
+      "description": "Conflits ou tensions avec le voisinage",
+      "points": 28,
+      "category": "Personnel",
+      "order": 45,
+      "id": 45
+    },
+    {
+      "title": "Projet professionnel majeur",
+      "description": "Responsabilité d'un projet important au travail",
+      "points": 32,
+      "category": "Professionnel",
+      "order": 46,
+      "id": 46
+    },
+    {
+      "title": "Changement d'équipe ou de manager",
+      "description": "Modification de l'environnement direct de travail",
+      "points": 25,
+      "category": "Professionnel",
+      "order": 47,
+      "id": 47
+    },
+    {
+      "title": "Panne ou accident de voiture",
+      "description": "Problème avec le véhicule principal",
+      "points": 19,
+      "category": "Personnel",
+      "order": 48,
+      "id": 48
+    },
+    {
+      "title": "Travaux importants dans le logement",
+      "description": "Rénovation majeure ou perturbation de l'habitat",
+      "points": 22,
+      "category": "Personnel",
+      "order": 49,
+      "id": 49
+    },
+    {
+      "title": "Changement d'orientation professionnelle",
+      "description": "Reconversion ou changement majeur de carrière",
+      "points": 36,
+      "category": "Professionnel",
+      "order": 50,
+      "id": 50
+    },
+    {
+      "title": "Prise en charge d'un parent âgé",
+      "description": "Nouvelle responsabilité familiale significative",
+      "points": 34,
+      "category": "Familial",
+      "order": 51,
+      "id": 51
+    },
+    {
+      "title": "Difficulté financière temporaire",
+      "description": "Période de restriction budgétaire",
+      "points": 30,
+      "category": "Financier",
+      "order": 52,
+      "id": 52
+    },
+    {
+      "title": "Conflit avec un ami proche",
+      "description": "Tension ou rupture dans une amitié importante",
+      "points": 27,
+      "category": "Personnel",
+      "order": 53,
+      "id": 53
+    },
+    {
+      "title": "Changement des habitudes sociales",
+      "description": "Modification significative du cercle d'amis ou des activités",
+      "points": 18,
+      "category": "Personnel",
+      "order": 54,
+      "id": 54
+    },
+    {
+      "title": "Début d'une activité entrepreneuriale",
+      "description": "Lancement d'un projet d'entreprise ou d'auto-entrepreneuriat",
+      "points": 40,
+      "category": "Professionnel",
+      "order": 55,
+      "id": 55
+    },
+    {
+      "title": "Anxiété persistante",
+      "description": "Sensation constante d'inquiétude ou de nervosité difficile à contrôler",
+      "points": 45,
+      "category": "Émotions",
+      "order": 101,
+      "id": 101
+    },
+    {
+      "title": "Tristesse ou mélancolie",
+      "description": "Sentiment de tristesse persistant qui affecte votre humeur quotidienne",
+      "points": 40,
+      "category": "Émotions",
+      "order": 102,
+      "id": 102
+    },
+    {
+      "title": "Irritabilité fréquente",
+      "description": "Vous vous sentez facilement irrité(e) ou agacé(e) par des situations ordinaires",
+      "points": 35,
+      "category": "Émotions",
+      "order": 103,
+      "id": 103
+    },
+    {
+      "title": "Sentiment d'être dépassé(e)",
+      "description": "Impression d'être submergé(e) par les responsabilités ou les attentes",
+      "points": 50,
+      "category": "Émotions",
+      "order": 104,
+      "id": 104
+    },
+    {
+      "title": "Colère incontrôlable",
+      "description": "Épisodes de colère intense difficiles à maîtriser",
+      "points": 47,
+      "category": "Émotions",
+      "order": 105,
+      "id": 105
+    },
+    {
+      "title": "Peur inexpliquée",
+      "description": "Sentiment de peur ou d'appréhension sans cause apparente",
+      "points": 38,
+      "category": "Émotions",
+      "order": 106,
+      "id": 106
+    },
+    {
+      "title": "Variations d'humeur importantes",
+      "description": "Changements brusques et fréquents entre différents états émotionnels",
+      "points": 42,
+      "category": "Émotions",
+      "order": 107,
+      "id": 107
+    },
+    {
+      "title": "Sentiment d'isolement émotionnel",
+      "description": "Impression d'être seul(e) avec ses émotions, même entouré(e)",
+      "points": 39,
+      "category": "Émotions",
+      "order": 108,
+      "id": 108
+    },
+    {
+      "title": "Apathie ou manque d'intérêt",
+      "description": "Perte d'envie ou d'enthousiasme pour des activités habituellement appréciées",
+      "points": 44,
+      "category": "Émotions",
+      "order": 109,
+      "id": 109
+    },
+    {
+      "title": "Culpabilité excessive",
+      "description": "Tendance à se sentir responsable ou coupable de façon disproportionnée",
+      "points": 36,
+      "category": "Émotions",
+      "order": 110,
+      "id": 110
     }
   ],
-  "autoIncrement": 43
+  "autoIncrement": 111
 }

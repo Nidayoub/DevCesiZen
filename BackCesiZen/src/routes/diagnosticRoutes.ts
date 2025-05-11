@@ -18,7 +18,21 @@ export async function diagnosticRoutes(req: Request): Promise<Response> {
 
   // POST /api/diagnostic/submit - Soumettre un diagnostic et obtenir un score
   if (path === "/api/diagnostic/submit" && method === "POST") {
+    // Exiger l'authentification pour soumettre et donc sauvegarder
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse; // Bloquer si non authentifié
+    
+    // Si on arrive ici, l'utilisateur est authentifié et req.userId est défini par authMiddleware
     return diagnosticController.submitDiagnostic(req);
+  }
+
+  // GET /api/diagnostic/history - Récupérer l'historique des diagnostics de l'utilisateur
+  if (path === "/api/diagnostic/history" && method === "GET") {
+    // Vérifier que l'utilisateur est connecté
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    return diagnosticController.getUserHistory(req);
   }
 
   // POST /api/diagnostic/configure - Modifier les questions (admin uniquement)

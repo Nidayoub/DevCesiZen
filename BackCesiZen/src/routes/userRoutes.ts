@@ -57,6 +57,11 @@ export async function userRoutes(req: Request): Promise<Response> {
     return userController.forgotPassword(req);
   }
 
+  // POST /api/reset-password - Réinitialisation du mot de passe avec un token
+  if (path === "/api/reset-password" && method === "POST") {
+    return userController.resetPassword(req);
+  }
+
   // Route utilisateur non trouvée
   return new Response(JSON.stringify({ error: "User route not found" }), {
     status: 404,

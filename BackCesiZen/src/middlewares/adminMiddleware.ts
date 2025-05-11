@@ -1,19 +1,18 @@
-import { UserModel } from "../models/userModel";
+import { UserModel } from "../models/User";
 
 /**
- * Middleware pour vérifier les droits administrateur
- * Nécessite que le middleware d'authentification ait été exécuté avant
+ * Middleware d'administration
+ * Vérifie si l'utilisateur connecté est administrateur
  * @param req Requête entrante
- * @returns Response d'erreur si l'utilisateur n'est pas admin, null sinon
+ * @returns Response d'erreur si non admin, null sinon
  */
 export async function adminMiddleware(req: Request): Promise<Response | null> {
   try {
-    // Récupérer l'ID de l'utilisateur depuis le middleware d'authentification
+    // Récupérer l'ID utilisateur
     const userId = (req as any).userId;
-    
     if (!userId) {
       return new Response(JSON.stringify({ 
-        error: "Utilisateur non identifié"
+        error: "Authentification requise"
       }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -21,12 +20,11 @@ export async function adminMiddleware(req: Request): Promise<Response | null> {
     }
     
     // Vérifier si l'utilisateur est admin
-    const userModel = new UserModel();
-    const user = await userModel.getById(userId);
+    const user = await UserModel.findById(userId);
     
-    if (!user || !user.isAdmin) {
+    if (!user || (user.role !== 'admin' && user.role !== 'super-admin')) {
       return new Response(JSON.stringify({ 
-        error: "Droits administrateur requis"
+        error: "Accès non autorisé - privilèges administrateur requis"
       }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
@@ -37,9 +35,9 @@ export async function adminMiddleware(req: Request): Promise<Response | null> {
     return null;
     
   } catch (error) {
-    console.error("Erreur de vérification admin:", error);
+    console.error("Erreur middleware admin:", error);
     return new Response(JSON.stringify({ 
-      error: "Erreur lors de la vérification des droits administrateur"
+      error: "Erreur lors de la vérification des droits d'administration"
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

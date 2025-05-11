@@ -28,6 +28,53 @@ Installation des dépendances :
 bun install
 ```
 
+## 📧 Configuration des emails
+
+L'application utilise Gmail pour l'envoi des emails de vérification lors de l'inscription.
+
+### Option 1: Utiliser le script de configuration
+
+Exécutez le script de configuration qui vous guidera:
+
+```bash
+bun run setup-email
+```
+
+### Option 2: Configuration manuelle
+
+Créez un fichier `.env` à la racine du projet avec les variables suivantes:
+
+```
+JWT_SECRET=votre_clé_secrète
+EMAIL_USER=votre_adresse@gmail.com
+EMAIL_PASSWORD=votre_mot_de_passe_application
+FRONTEND_URL=http://localhost:3000
+EMAIL_TEST_MODE=false
+```
+
+### Prérequis pour Gmail
+
+Pour utiliser Gmail comme serveur d'envoi d'emails:
+
+1. Activez l'authentification à deux facteurs sur votre compte Google
+2. Créez un "Mot de passe d'application":
+   - Allez sur https://myaccount.google.com/apppasswords
+   - Sélectionnez "Mail" comme application
+   - Utilisez le mot de passe généré dans votre configuration (EMAIL_PASSWORD)
+
+### Mode test des emails
+
+Si vous rencontrez des problèmes ou ne souhaitez pas configurer Gmail immédiatement:
+
+```bash
+bun run toggle-email-test
+```
+
+En mode test:
+- Les emails ne sont pas réellement envoyés mais affichés dans la console
+- L'inscription fonctionne sans configuration email valide
+- Idéal pour le développement et les tests
+
 ## 🔧 Développement
 
 Lancer en mode développement (avec hot reload) :

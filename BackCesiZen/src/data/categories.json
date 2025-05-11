@@ -1,0 +1,133 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Techniques",
+      "description": "Méthodes et exercices pratiques pour gérer le stress",
+      "icon": "exercise",
+      "createdAt": "2024-06-20T10:00:00.000Z",
+      "updatedAt": "2024-06-20T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Bien-être",
+      "description": "Conseils pour améliorer votre qualité de vie et réduire le stress",
+      "icon": "heart",
+      "createdAt": "2024-06-20T10:01:00.000Z",
+      "updatedAt": "2024-06-20T10:01:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Éducation",
+      "description": "Informations scientifiques sur le stress et ses effets",
+      "icon": "book",
+      "createdAt": "2024-06-20T10:02:00.000Z",
+      "updatedAt": "2024-06-20T10:02:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Professionnel",
+      "description": "Gestion du stress au travail et dans la vie professionnelle",
+      "icon": "briefcase",
+      "createdAt": "2024-06-20T10:03:00.000Z",
+      "updatedAt": "2024-06-20T10:03:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Général",
+      "description": "Informations générales sur l'application et ses fonctionnalités",
+      "icon": "info",
+      "createdAt": "2024-06-20T10:04:00.000Z",
+      "updatedAt": "2024-06-20T10:04:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Santé mentale",
+      "description": "Articles centrés sur la santé mentale et le bien-être psychologique",
+      "icon": "brain",
+      "createdAt": "2024-06-20T10:05:00.000Z",
+      "updatedAt": "2024-06-20T10:05:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Stress chronique",
+      "description": "Contenu spécifique à la gestion du stress chronique",
+      "icon": "warning",
+      "createdAt": "2024-06-20T10:06:00.000Z",
+      "updatedAt": "2024-06-20T10:06:00.000Z"
+    },
+    {
+      "id": 8,
+      "name": "Méditation",
+      "description": "Guides et ressources sur la méditation et la pleine conscience",
+      "icon": "meditation",
+      "createdAt": "2024-06-20T10:07:00.000Z",
+      "updatedAt": "2024-06-20T10:07:00.000Z"
+    },
+    {
+      "id": 9,
+      "name": "Activité physique",
+      "description": "Exercices et conseils sur l'activité physique pour réduire le stress",
+      "icon": "fitness",
+      "createdAt": "2024-06-27T09:30:00.000Z",
+      "updatedAt": "2024-06-27T09:30:00.000Z"
+    },
+    {
+      "id": 10,
+      "name": "Nutrition",
+      "description": "Conseils alimentaires et nutritionnels pour la gestion du stress",
+      "icon": "food",
+      "createdAt": "2024-06-27T09:35:00.000Z",
+      "updatedAt": "2024-06-27T09:35:00.000Z"
+    },
+    {
+      "id": 11,
+      "name": "Sommeil",
+      "description": "Informations et conseils pour améliorer la qualité du sommeil",
+      "icon": "bed",
+      "createdAt": "2024-06-27T09:40:00.000Z",
+      "updatedAt": "2024-06-27T09:40:00.000Z"
+    },
+    {
+      "id": 12,
+      "name": "Respiration",
+      "description": "Techniques de respiration pour la relaxation et la gestion du stress",
+      "icon": "lungs",
+      "createdAt": "2024-06-27T09:45:00.000Z",
+      "updatedAt": "2024-06-27T09:45:00.000Z"
+    },
+    {
+      "id": 13,
+      "name": "Neurobiologie",
+      "description": "Articles sur les mécanismes cérébraux du stress et de la relaxation",
+      "icon": "neuron",
+      "createdAt": "2024-06-27T09:50:00.000Z",
+      "updatedAt": "2024-06-27T09:50:00.000Z"
+    },
+    {
+      "id": 14,
+      "name": "Relations sociales",
+      "description": "Impact des relations sur le stress et stratégies pour les améliorer",
+      "icon": "users",
+      "createdAt": "2024-06-27T09:55:00.000Z",
+      "updatedAt": "2024-06-27T09:55:00.000Z"
+    },
+    {
+      "id": 15,
+      "name": "Nature et écothérapie",
+      "description": "Bienfaits de la nature sur la réduction du stress",
+      "icon": "tree",
+      "createdAt": "2024-06-27T10:00:00.000Z",
+      "updatedAt": "2024-06-27T10:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "name": "Témoignages",
+      "description": "Expériences personnelles et histoires de réussite dans la gestion du stress",
+      "icon": "comment",
+      "createdAt": "2024-06-27T10:05:00.000Z",
+      "updatedAt": "2024-06-27T10:05:00.000Z"
+    }
+  ],
+  "autoIncrement": 17
+} 

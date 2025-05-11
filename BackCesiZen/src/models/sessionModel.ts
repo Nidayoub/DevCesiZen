@@ -9,7 +9,7 @@ export interface Session {
   userId: number;
   token: string;
   expiration: Date;
-  createdAt: string;
+  createdAt?: string;
 }
 
 /**
@@ -18,6 +18,30 @@ export interface Session {
 export class SessionModel extends BaseModel<Session> {
   constructor() {
     super("sessions");
+  }
+
+  /**
+   * Crée une nouvelle session
+   * @param session Les données de la session à créer
+   * @returns La session créée
+   */
+  async create(session: Omit<Session, 'id'>): Promise<Session> {
+    // Assurez-vous que expiration est une chaîne de caractères pour le stockage JSON
+    const sessionToCreate: any = {
+      ...session,
+      expiration: session.expiration instanceof Date 
+        ? session.expiration.toISOString() 
+        : session.expiration,
+      createdAt: session.createdAt || new Date().toISOString()
+    };
+    
+    const createdSession = await super.create(sessionToCreate);
+    
+    // Convertir la chaîne de date en objet Date pour le retour
+    return {
+      ...createdSession,
+      expiration: new Date(createdSession.expiration)
+    };
   }
 
   /**

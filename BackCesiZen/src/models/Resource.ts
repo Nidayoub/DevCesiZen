@@ -17,52 +17,65 @@ export interface ResourceWithCategories extends Resource {
 
 export class ResourceModel {
   static async create(resource: Omit<Resource, 'id' | 'created_at' | 'updated_at'>): Promise<Resource> {
-    const result = await db.sql`
-      INSERT INTO resources (title, description, type, url, created_by)
-      VALUES (${resource.title}, ${resource.description}, ${resource.type}, ${resource.url}, ${resource.created_by})
-      RETURNING *
-    `;
+    const result = await db.execute(
+      `INSERT INTO resources (title, description, type, url, created_by)
+       VALUES (?, ?, ?, ?, ?)
+       RETURNING *`,
+      [resource.title, resource.description, resource.type, resource.url, resource.created_by]
+    );
     
-    return result[0];
+    const createdResource = await db.queryOne<Resource>(
+      'SELECT * FROM resources WHERE id = ?',
+      [result.lastInsertId]
+    );
+    
+    if (!createdResource) {
+      throw new Error('Erreur lors de la création de la ressource');
+    }
+    
+    return createdResource;
   }
 
   static async findById(id: number): Promise<ResourceWithCategories | null> {
-    const resource = await db.sql`
-      SELECT * FROM resources WHERE id = ${id}
-    `;
+    const resource = await db.queryOne<Resource>(
+      'SELECT * FROM resources WHERE id = ?',
+      [id]
+    );
     
-    if (!resource[0]) return null;
+    if (!resource) return null;
     
-    const categories = await db.sql`
-      SELECT c.id, c.name 
-      FROM categories c
-      JOIN resource_categories rc ON c.id = rc.category_id
-      WHERE rc.resource_id = ${id}
-    `;
+    const categories = await db.query<{ id: number; name: string }>(
+      `SELECT c.id, c.name 
+       FROM categories c
+       JOIN resource_categories rc ON c.id = rc.category_id
+       WHERE rc.resource_id = ?`,
+      [id]
+    );
     
     return {
-      ...resource[0],
-      categories: categories
+      ...resource,
+      categories
     };
   }
 
   static async findAll(): Promise<ResourceWithCategories[]> {
-    const resources = await db.sql`
-      SELECT * FROM resources ORDER BY created_at DESC
-    `;
+    const resources = await db.query<Resource>(
+      'SELECT * FROM resources ORDER BY created_at DESC'
+    );
     
     const resourcesWithCategories = await Promise.all(
       resources.map(async (resource) => {
-        const categories = await db.sql`
-          SELECT c.id, c.name 
-          FROM categories c
-          JOIN resource_categories rc ON c.id = rc.category_id
-          WHERE rc.resource_id = ${resource.id}
-        `;
+        const categories = await db.query<{ id: number; name: string }>(
+          `SELECT c.id, c.name 
+           FROM categories c
+           JOIN resource_categories rc ON c.id = rc.category_id
+           WHERE rc.resource_id = ?`,
+          [resource.id]
+        );
         
         return {
           ...resource,
-          categories: categories
+          categories
         };
       })
     );
@@ -95,41 +108,46 @@ export class ResourceModel {
     
     if (updates.length === 0) return null;
     
-    const result = await db.sql`
-      UPDATE resources 
-      SET ${db.sql.raw(updates.join(', '))}
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    values.push(id);
     
-    return result[0] || null;
+    await db.execute(
+      `UPDATE resources 
+       SET ${updates.join(', ')}
+       WHERE id = ?`,
+      values
+    );
+    
+    return await this.findById(id);
   }
 
   static async delete(id: number): Promise<boolean> {
     // Supprimer d'abord les relations avec les catégories
-    await db.sql`
-      DELETE FROM resource_categories WHERE resource_id = ${id}
-    `;
+    await db.execute(
+      'DELETE FROM resource_categories WHERE resource_id = ?',
+      [id]
+    );
     
     // Supprimer les favoris associés
-    await db.sql`
-      DELETE FROM favorites WHERE resource_id = ${id}
-    `;
+    await db.execute(
+      'DELETE FROM favorites WHERE resource_id = ?',
+      [id]
+    );
     
     // Supprimer la ressource
-    const result = await db.sql`
-      DELETE FROM resources WHERE id = ${id}
-    `;
+    const result = await db.execute(
+      'DELETE FROM resources WHERE id = ?',
+      [id]
+    );
     
     return result.changes > 0;
   }
 
   static async addCategory(resourceId: number, categoryId: number): Promise<boolean> {
     try {
-      await db.sql`
-        INSERT INTO resource_categories (resource_id, category_id)
-        VALUES (${resourceId}, ${categoryId})
-      `;
+      await db.execute(
+        'INSERT INTO resource_categories (resource_id, category_id) VALUES (?, ?)',
+        [resourceId, categoryId]
+      );
       return true;
     } catch (error) {
       return false;
@@ -137,10 +155,10 @@ export class ResourceModel {
   }
 
   static async removeCategory(resourceId: number, categoryId: number): Promise<boolean> {
-    const result = await db.sql`
-      DELETE FROM resource_categories 
-      WHERE resource_id = ${resourceId} AND category_id = ${categoryId}
-    `;
+    const result = await db.execute(
+      'DELETE FROM resource_categories WHERE resource_id = ? AND category_id = ?',
+      [resourceId, categoryId]
+    );
     return result.changes > 0;
   }
 } 

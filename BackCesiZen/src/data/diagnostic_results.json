@@ -1,4 +1,194 @@
 {
-  "data": [],
-  "autoIncrement": 1
+  "data": [
+    {
+      "id": 1,
+      "userId": 3,
+      "selectedEvents": [
+        1,
+        5,
+        6,
+        8,
+        16
+      ],
+      "score": 301,
+      "interpretation": "Votre score indique un niveau de stress élevé. Vous avez vécu plusieurs événements de vie majeurs qui représentent une charge émotionnelle et psychologique importante. Il est recommandé de mettre en place des stratégies actives de gestion du stress et éventuellement de consulter un professionnel de la santé mentale. Prenez soin de votre sommeil, pratiquez des techniques de relaxation quotidiennes et assurez-vous d'avoir un soutien social adéquat.",
+      "createdAt": "2024-06-15T14:22:47.085Z"
+    },
+    {
+      "id": 2,
+      "userId": 4,
+      "selectedEvents": [
+        3,
+        11,
+        15,
+        19,
+        22,
+        29
+      ],
+      "score": 237,
+      "interpretation": "Votre score indique un niveau de stress modéré. Vous traversez une période qui demande une attention particulière à votre bien-être. Il serait bénéfique d'intégrer des pratiques de gestion du stress dans votre quotidien, comme la méditation, l'activité physique régulière ou des techniques de respiration. Accordez-vous des moments de détente et n'hésitez pas à partager vos préoccupations avec des personnes de confiance.",
+      "createdAt": "2024-06-18T09:45:12.085Z"
+    },
+    {
+      "id": 3,
+      "userId": 5,
+      "selectedEvents": [
+        16,
+        28,
+        34,
+        36,
+        39,
+        40,
+        41
+      ],
+      "score": 124,
+      "interpretation": "Votre score indique un niveau de stress faible à modéré. Bien que vous ayez vécu certains changements, votre niveau de stress reste gérable. C'est un bon moment pour renforcer vos habitudes de bien-être et de prévention du stress. Maintenez une activité physique régulière, une alimentation équilibrée et des relations sociales positives. Continuez à pratiquer la pleine conscience et à vous accorder du temps de qualité.",
+      "createdAt": "2024-06-20T17:30:33.085Z"
+    },
+    {
+      "id": 4,
+      "userId": 3,
+      "selectedEvents": [
+        8,
+        11,
+        16,
+        22,
+        28,
+        31,
+        33,
+        38,
+        39
+      ],
+      "score": 252,
+      "interpretation": "Votre score indique un niveau de stress modéré à élevé. Cette accumulation d'événements peut avoir un impact significatif sur votre bien-être. Il est important de prendre des mesures pour gérer activement ce stress. Privilégiez des techniques de relaxation quotidiennes, améliorez votre hygiène de sommeil et envisagez de réduire temporairement certaines responsabilités si possible. Un soutien professionnel pourrait vous aider à développer des stratégies d'adaptation efficaces.",
+      "createdAt": "2024-06-22T11:15:27.085Z"
+    },
+    {
+      "id": 5,
+      "userId": null,
+      "selectedEvents": [
+        18,
+        20,
+        32,
+        34,
+        38
+      ],
+      "score": 109,
+      "interpretation": "Votre score indique un niveau de stress faible. Les changements que vous vivez actuellement représentent un défi modéré pour votre capacité d'adaptation. C'est un excellent moment pour renforcer vos pratiques préventives : maintenez une routine équilibrée, pratiquez des activités qui vous procurent du plaisir et restez connecté à votre réseau social. Cette période est propice pour développer de nouvelles compétences en gestion du stress qui vous serviront à l'avenir.",
+      "createdAt": "2024-06-23T20:05:44.085Z"
+    },
+    {
+      "id": 6,
+      "userId": 6,
+      "selectedEvents": [
+        2,
+        16,
+        20,
+        22,
+        28,
+        31,
+        39
+      ],
+      "score": 183,
+      "interpretation": "Votre score indique un niveau de stress modéré. Vous traversez une période de transition avec plusieurs changements significatifs dans votre vie. Accordez une attention particulière à votre équilibre émotionnel pendant cette phase. Essayez d'intégrer des moments de détente dans votre routine quotidienne, comme 10 minutes de méditation le matin ou une promenade en fin de journée. La pratique régulière de la cohérence cardiaque (respiration 6 cycles/minute) peut vous aider à retrouver un meilleur équilibre autonomique. N'hésitez pas à déléguer certaines tâches et à vous accorder des moments de plaisir.",
+      "createdAt": "2024-06-24T09:30:18.085Z"
+    },
+    {
+      "id": 7,
+      "userId": 8,
+      "selectedEvents": [
+        7,
+        12,
+        14,
+        44,
+        48,
+        49
+      ],
+      "score": 170,
+      "interpretation": "Votre score de 170 indique un niveau de stress modéré. Vous vivez actuellement plusieurs événements heureux (mariage, grossesse, nouvel enfant) qui, bien que positifs, représentent des changements importants nécessitant une adaptation. Combinés aux défis logistiques (déménagement, travaux, problème de voiture), ces événements peuvent créer une charge mentale significative. Prenez le temps de célébrer les moments positifs tout en accordant suffisamment d'attention à votre bien-être. Assurez-vous de maintenir une communication ouverte avec vos proches et n'hésitez pas à demander de l'aide pour les aspects pratiques. Des techniques de gestion du stress comme la respiration profonde ou la pleine conscience peuvent vous aider à rester centré pendant cette période de transition.",
+      "createdAt": "2024-06-25T14:45:36.085Z"
+    },
+    {
+      "id": 8,
+      "userId": 9,
+      "selectedEvents": [
+        3,
+        13,
+        15,
+        19,
+        36,
+        46,
+        53
+      ],
+      "score": 223,
+      "interpretation": "Votre score de 223 points révèle un niveau de stress modéré à élevé. La combinaison de changements relationnels (séparation conjugale, difficultés dans les relations) et professionnels (réajustement, projet majeur) crée une pression importante sur vos ressources d'adaptation. Dans cette période, il est crucial de renforcer vos mécanismes de soutien. Envisagez de consulter un thérapeute pour vous aider à traverser les défis relationnels. Sur le plan professionnel, la gestion du temps et la définition de limites claires peuvent vous aider à mieux gérer la charge de travail. Accordez une attention particulière à votre sommeil et à votre alimentation, qui sont souvent affectés dans ce type de situation. Des activités physiques régulières, même modérées comme la marche, peuvent significativement réduire votre niveau de stress et améliorer votre humeur. Rappelez-vous que cette période de transition, bien que difficile, est temporaire.",
+      "createdAt": "2024-06-26T08:20:52.085Z"
+    },
+    {
+      "id": 9,
+      "userId": 11,
+      "selectedEvents": [
+        8,
+        18,
+        20,
+        22,
+        30,
+        50,
+        55
+      ],
+      "score": 240,
+      "interpretation": "Votre score de 240 points indique un niveau de stress modéré, principalement lié à des changements professionnels importants. La combinaison d'un licenciement, d'une reconversion professionnelle et du lancement d'une activité entrepreneuriale représente une période de grande transformation. Cette transition professionnelle, accompagnée de préoccupations financières (prêt, changement de responsabilités), génère naturellement de l'incertitude. Pendant cette phase, concentrez-vous sur ce que vous pouvez contrôler : établissez un plan d'action clair avec des objectifs à court terme, développez vos compétences dans votre nouveau domaine, et structurez votre temps pour éviter le sentiment d'être dépassé. Les techniques de visualisation positive peuvent être particulièrement utiles pour maintenir votre motivation et réduire l'anxiété face à l'incertitude. Gardez également à l'esprit l'importance de votre réseau : entourez-vous de personnes qui soutiennent votre nouvelle direction et n'hésitez pas à vous connecter avec des mentors ou des groupes de pairs vivant des transitions similaires.",
+      "createdAt": "2024-06-27T11:35:09.085Z"
+    },
+    {
+      "id": 10,
+      "userId": 10,
+      "selectedEvents": [
+        5,
+        11,
+        21,
+        32,
+        51
+      ],
+      "score": 187,
+      "interpretation": "Votre score de 187 reflète un niveau de stress modéré, principalement lié à des responsabilités familiales accrues et des défis personnels. La perte d'un proche parent, combinée à la prise en charge d'un parent âgé et aux soucis de santé d'un membre de la famille, représente une charge émotionnelle significative. Les difficultés financières (saisie d'hypothèque) et le déménagement ajoutent une pression supplémentaire. Dans cette situation, il est essentiel de reconnaître vos propres limites et de rechercher activement du soutien. Explorez les ressources disponibles pour les aidants familiaux dans votre communauté et n'hésitez pas à déléguer certaines responsabilités quand c'est possible. Prenez soin de votre propre santé en maintenant des routines de sommeil régulières et en vous accordant des moments de répit, même courts. La pratique de l'autocompassion est particulièrement importante dans votre situation - rappelez-vous qu'en prenant soin de vous, vous serez plus à même d'aider vos proches.",
+      "createdAt": "2024-06-28T15:10:27.085Z"
+    },
+    {
+      "userId": null,
+      "selectedEvents": [
+        17
+      ],
+      "score": 37,
+      "createdAt": "2025-05-10T00:36:23.541Z",
+      "id": 11
+    },
+    {
+      "userId": null,
+      "selectedEvents": [
+        1,
+        7,
+        24,
+        21,
+        32,
+        22,
+        13,
+        36,
+        33
+      ],
+      "score": 335,
+      "createdAt": "2025-05-10T22:02:06.222Z",
+      "id": 12
+    },
+    {
+      "userId": null,
+      "selectedEvents": [
+        5
+      ],
+      "score": 63,
+      "createdAt": "2025-05-10T22:07:23.190Z",
+      "id": 13
+    }
+  ],
+  "autoIncrement": 14
 }

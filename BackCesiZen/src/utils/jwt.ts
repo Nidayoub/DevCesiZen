@@ -1,13 +1,7 @@
-import { jwt } from '@elysiajs/jwt';
-import { Elysia } from 'elysia';
+import { SignJWT, jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-export const jwtPlugin = new Elysia()
-  .use(jwt({
-    name: 'jwt',
-    secret: JWT_SECRET
-  }));
+const SECRET_KEY = new TextEncoder().encode(JWT_SECRET);
 
 export interface JWTPayload {
   userId: number;
@@ -16,14 +10,38 @@ export interface JWTPayload {
 }
 
 export const generateToken = async (payload: JWTPayload): Promise<string> => {
-  return await jwtPlugin.jwt.sign(payload);
+  console.log("🔑 Génération du token JWT avec payload:", JSON.stringify(payload));
+  try {
+    const token = await new SignJWT(payload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1h') // Expire dans 7 jours
+      .sign(SECRET_KEY);
+    
+    console.log("✅ Token JWT généré avec succès");
+    return token;
+  } catch (error) {
+    console.error("❌ Erreur lors de la génération du token JWT:", error);
+    if (error instanceof Error) {
+      console.error("Message d'erreur:", error.message);
+      console.error("Stack trace:", error.stack);
+    }
+    throw error;
+  }
 };
 
-export const verifyToken = async (token: string): Promise<JWTPayload | null> => {
+export const verifyToken = async (token: string): Promise<JWTPayload> => {
+  console.log("🔍 Vérification du token JWT");
   try {
-    const payload = await jwtPlugin.jwt.verify(token);
-    return payload as JWTPayload;
+    const { payload } = await jwtVerify(token, SECRET_KEY);
+    console.log("✅ Token JWT vérifié avec succès");
+    return payload as unknown as JWTPayload;
   } catch (error) {
-    return null;
+    console.error("❌ Erreur lors de la vérification du token JWT:", error);
+    if (error instanceof Error) {
+      console.error("Message d'erreur:", error.message);
+      console.error("Stack trace:", error.stack);
+    }
+    throw error;
   }
 }; 

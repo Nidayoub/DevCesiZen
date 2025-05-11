@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Amélioration du contraste pour les listes déroulantes */
+select {
+  color: #171717 !important; /* Texte noir pour une meilleure lisibilité */
+  font-weight: 500;
+}
+
+select option {
+  color: #171717 !important; /* Texte noir pour les options également */
+  font-weight: 500; /* Medium weight pour une meilleure lisibilité */
+  background-color: white;
+}

@@ -9,27 +9,36 @@ export interface Category {
 
 export class CategoryModel {
   static async create(category: Omit<Category, 'id' | 'created_at'>): Promise<Category> {
-    const result = await db.sql`
-      INSERT INTO categories (name, description)
-      VALUES (${category.name}, ${category.description})
-      RETURNING *
-    `;
+    const result = await db.execute(
+      `INSERT INTO categories (name, description)
+       VALUES (?, ?)
+       RETURNING *`,
+      [category.name, category.description]
+    );
     
-    return result[0];
+    const createdCategory = await db.queryOne<Category>(
+      'SELECT * FROM categories WHERE id = ?',
+      [result.lastInsertId]
+    );
+    
+    if (!createdCategory) {
+      throw new Error('Erreur lors de la création de la catégorie');
+    }
+    
+    return createdCategory;
   }
 
   static async findById(id: number): Promise<Category | null> {
-    const result = await db.sql`
-      SELECT * FROM categories WHERE id = ${id}
-    `;
-    return result[0] || null;
+    return await db.queryOne<Category>(
+      'SELECT * FROM categories WHERE id = ?',
+      [id]
+    );
   }
 
   static async findAll(): Promise<Category[]> {
-    const result = await db.sql`
-      SELECT * FROM categories ORDER BY name
-    `;
-    return result;
+    return await db.query<Category>(
+      'SELECT * FROM categories ORDER BY name'
+    );
   }
 
   static async update(id: number, category: Partial<Category>): Promise<Category | null> {
@@ -47,26 +56,30 @@ export class CategoryModel {
     
     if (updates.length === 0) return null;
     
-    const result = await db.sql`
-      UPDATE categories 
-      SET ${db.sql.raw(updates.join(', '))}
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    values.push(id);
     
-    return result[0] || null;
+    await db.execute(
+      `UPDATE categories 
+       SET ${updates.join(', ')}
+       WHERE id = ?`,
+      values
+    );
+    
+    return await this.findById(id);
   }
 
   static async delete(id: number): Promise<boolean> {
     // Supprimer d'abord les relations avec les ressources
-    await db.sql`
-      DELETE FROM resource_categories WHERE category_id = ${id}
-    `;
+    await db.execute(
+      'DELETE FROM resource_categories WHERE category_id = ?',
+      [id]
+    );
     
     // Supprimer la catégorie
-    const result = await db.sql`
-      DELETE FROM categories WHERE id = ${id}
-    `;
+    const result = await db.execute(
+      'DELETE FROM categories WHERE id = ?',
+      [id]
+    );
     
     return result.changes > 0;
   }

@@ -1,4 +1,4 @@
-import { BaseModel } from "./baseModel";
+import { db } from "../data/database";
 
 /**
  * Interface pour les événements de diagnostic
@@ -9,7 +9,7 @@ export interface DiagnosticEvent {
   description: string;
   points: number;
   category: string;
-  order: number;
+  order_num: number;
 }
 
 /**
@@ -17,89 +17,161 @@ export interface DiagnosticEvent {
  */
 export interface DiagnosticResult {
   id: number;
-  userId: number | null; // Peut être null pour les diagnostics anonymes
-  selectedEvents: number[]; // IDs des événements sélectionnés
+  user_id: number | null; // Peut être null pour les diagnostics anonymes
   score: number;
-  createdAt: string;
+  created_at: string;
+  selected_events?: DiagnosticEvent[]; // Événements sélectionnés
 }
 
 /**
  * Modèle pour la gestion des événements de diagnostic
  */
-export class DiagnosticEventModel extends BaseModel<DiagnosticEvent> {
-  constructor() {
-    super("diagnostic_events");
-    
-    // Initialiser avec les événements de l'échelle Holmes & Rahe si vide
-    this.initializeIfEmpty();
+export class DiagnosticEventModel {
+  /**
+   * Récupère tous les événements de diagnostic
+   * @returns Promesse avec la liste des événements
+   */
+  async getAll(): Promise<DiagnosticEvent[]> {
+    try {
+      const events = await db.query('SELECT * FROM diagnostic_questions ORDER BY order_num');
+      return events as DiagnosticEvent[];
+    } catch (error) {
+      console.error('Erreur lors de la récupération des événements:', error);
+      return [];
+    }
   }
 
   /**
-   * Récupère les événements triés par ordre
-   * @returns Liste des événements triés
+   * Récupère un événement par son ID
+   * @param id ID de l'événement
+   * @returns Promesse avec l'événement ou null
    */
-  async getSorted(): Promise<DiagnosticEvent[]> {
-    return [...this.data].sort((a, b) => a.order - b.order);
+  async getById(id: number): Promise<DiagnosticEvent | null> {
+    try {
+      const event = await db.queryOne('SELECT * FROM diagnostic_questions WHERE id = ?', [id]);
+      return event as DiagnosticEvent || null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'événement:', error);
+      return null;
+    }
   }
 
   /**
-   * Initialise les événements si la liste est vide
-   * Utilise l'échelle de stress de Holmes & Rahe
+   * Récupère les événements par catégorie
+   * @param category Catégorie des événements
+   * @returns Promesse avec la liste des événements
    */
-  private async initializeIfEmpty(): Promise<void> {
-    if (this.data.length === 0) {
-      // Événements de l'échelle de Holmes & Rahe
-      const events: Omit<DiagnosticEvent, "id">[] = [
-        { title: "Décès du conjoint", description: "Perte du conjoint par décès", points: 100, category: "Familial", order: 1 },
-        { title: "Divorce", description: "Dissolution légale du mariage", points: 73, category: "Familial", order: 2 },
-        { title: "Séparation conjugale", description: "Séparation du conjoint", points: 65, category: "Familial", order: 3 },
-        { title: "Emprisonnement", description: "Période d'incarcération", points: 63, category: "Personnel", order: 4 },
-        { title: "Décès d'un proche parent", description: "Perte d'un membre de la famille proche", points: 63, category: "Familial", order: 5 },
-        { title: "Blessure ou maladie personnelle", description: "Problème de santé majeur", points: 53, category: "Santé", order: 6 },
-        { title: "Mariage", description: "Union maritale", points: 50, category: "Familial", order: 7 },
-        { title: "Licenciement", description: "Perte d'emploi", points: 47, category: "Professionnel", order: 8 },
-        { title: "Réconciliation conjugale", description: "Réconciliation avec le conjoint", points: 45, category: "Familial", order: 9 },
-        { title: "Retraite", description: "Fin de la carrière professionnelle", points: 45, category: "Professionnel", order: 10 },
-        { title: "Changement de santé d'un membre de la famille", description: "Problème de santé d'un proche", points: 44, category: "Familial", order: 11 },
-        { title: "Grossesse", description: "Attente d'un enfant", points: 40, category: "Familial", order: 12 },
-        { title: "Difficultés sexuelles", description: "Problèmes dans la vie sexuelle", points: 39, category: "Personnel", order: 13 },
-        { title: "Arrivée d'un nouvel enfant", description: "Naissance ou adoption", points: 39, category: "Familial", order: 14 },
-        { title: "Réajustement professionnel", description: "Changement majeur au travail", points: 39, category: "Professionnel", order: 15 },
-        { title: "Changement de situation financière", description: "Amélioration ou détérioration significative", points: 38, category: "Financier", order: 16 },
-        { title: "Décès d'un ami proche", description: "Perte d'un ami important", points: 37, category: "Personnel", order: 17 },
-        { title: "Changement de métier", description: "Changement de type de travail", points: 36, category: "Professionnel", order: 18 },
-        { title: "Changement dans les relations avec le conjoint", description: "Plus ou moins de discussions", points: 35, category: "Familial", order: 19 },
-        { title: "Contraction d'un prêt important", description: "Prêt immobilier ou professionnel", points: 31, category: "Financier", order: 20 },
-        { title: "Saisie d'hypothèque ou de prêt", description: "Impossibilité de rembourser", points: 30, category: "Financier", order: 21 },
-        { title: "Changement de responsabilités au travail", description: "Promotion, rétrogradation, mutation", points: 29, category: "Professionnel", order: 22 },
-        { title: "Départ d'un enfant du foyer", description: "Enfant quittant la maison", points: 29, category: "Familial", order: 23 },
-        { title: "Problèmes avec la belle-famille", description: "Conflits familiaux", points: 29, category: "Familial", order: 24 },
-        { title: "Réussite personnelle marquante", description: "Accomplissement personnel important", points: 28, category: "Personnel", order: 25 },
-        { title: "Conjoint commençant ou arrêtant de travailler", description: "Changement professionnel du conjoint", points: 26, category: "Familial", order: 26 },
-        { title: "Début ou fin d'études", description: "Entrée ou sortie du système éducatif", points: 26, category: "Personnel", order: 27 },
-        { title: "Changement de conditions de vie", description: "Modification du confort ou de l'environnement", points: 25, category: "Personnel", order: 28 },
-        { title: "Révision des habitudes personnelles", description: "Changement de mode de vie", points: 24, category: "Personnel", order: 29 },
-        { title: "Difficultés avec un supérieur", description: "Problèmes avec un responsable au travail", points: 23, category: "Professionnel", order: 30 },
-        { title: "Changement d'horaires ou de conditions de travail", description: "Modification du cadre professionnel", points: 20, category: "Professionnel", order: 31 },
-        { title: "Déménagement", description: "Changement de lieu de résidence", points: 20, category: "Personnel", order: 32 },
-        { title: "Changement d'école", description: "Nouvel établissement scolaire", points: 20, category: "Personnel", order: 33 },
-        { title: "Changement dans les loisirs", description: "Modification des activités récréatives", points: 19, category: "Personnel", order: 34 },
-        { title: "Changement dans les activités religieuses", description: "Augmentation ou diminution", points: 19, category: "Personnel", order: 35 },
-        { title: "Changement dans les activités sociales", description: "Modification des habitudes sociales", points: 18, category: "Personnel", order: 36 },
-        { title: "Petit emprunt", description: "Crédit à la consommation", points: 17, category: "Financier", order: 37 },
-        { title: "Changement dans les habitudes de sommeil", description: "Modification du rythme ou de la qualité", points: 16, category: "Personnel", order: 38 },
-        { title: "Changement dans les habitudes alimentaires", description: "Modification du régime alimentaire", points: 15, category: "Personnel", order: 39 },
-        { title: "Vacances", description: "Période de congés", points: 13, category: "Personnel", order: 40 },
-        { title: "Fêtes de fin d'année", description: "Période des festivités", points: 12, category: "Personnel", order: 41 },
-        { title: "Petite infraction légale", description: "Contravention, amende", points: 11, category: "Personnel", order: 42 }
-      ];
-      
-      // Ajouter chaque événement
-      for (const event of events) {
-        await this.create(event);
+  async getByCategory(category: string): Promise<DiagnosticEvent[]> {
+    try {
+      const categoryId = await db.queryOne('SELECT id FROM diagnostic_categories WHERE name = ?', [category]);
+      if (!categoryId) {
+        return [];
       }
       
-      console.log("Événements de diagnostic initialisés avec l'échelle de Holmes & Rahe");
+      const events = await db.query(
+        'SELECT * FROM diagnostic_questions WHERE category_id = ? ORDER BY order_num', 
+        [categoryId.id]
+      );
+      return events as DiagnosticEvent[];
+    } catch (error) {
+      console.error('Erreur lors de la récupération des événements par catégorie:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Crée un nouvel événement de diagnostic
+   * @param event Données de l'événement
+   * @returns Promesse avec l'événement créé
+   */
+  async create(event: Omit<DiagnosticEvent, "id">): Promise<DiagnosticEvent> {
+    try {
+      const result = await db.execute(
+        `INSERT INTO diagnostic_questions (title, description, points, category_id, order_num)
+         VALUES (?, ?, ?, ?, ?)`,
+        [event.title, event.description, event.points, event.category, event.order_num]
+      );
+      
+      const newEvent = await this.getById(result.lastInsertId);
+      if (!newEvent) {
+        throw new Error("Impossible de récupérer l'événement créé");
+      }
+      
+      return newEvent;
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'événement:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Met à jour un événement existant
+   * @param id ID de l'événement
+   * @param event Données à mettre à jour
+   * @returns Promesse avec l'événement mis à jour
+   */
+  async update(id: number, event: Partial<DiagnosticEvent>): Promise<DiagnosticEvent | null> {
+    try {
+      // Construire la requête dynamiquement
+      const updateFields = [];
+      const params = [];
+      
+      if (event.title !== undefined) {
+        updateFields.push('title = ?');
+        params.push(event.title);
+      }
+      
+      if (event.description !== undefined) {
+        updateFields.push('description = ?');
+        params.push(event.description);
+      }
+      
+      if (event.points !== undefined) {
+        updateFields.push('points = ?');
+        params.push(event.points);
+      }
+      
+      if (event.category !== undefined) {
+        updateFields.push('category_id = ?');
+        params.push(event.category);
+      }
+      
+      if (event.order_num !== undefined) {
+        updateFields.push('order_num = ?');
+        params.push(event.order_num);
+      }
+      
+      if (updateFields.length === 0) {
+        return this.getById(id);
+      }
+      
+      // Ajouter l'ID à la fin des paramètres
+      params.push(id);
+      
+      await db.execute(
+        `UPDATE diagnostic_questions SET ${updateFields.join(', ')} WHERE id = ?`,
+        params
+      );
+      
+      return this.getById(id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'événement:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Supprime un événement de diagnostic
+   * @param id ID de l'événement
+   * @returns Promesse avec le succès de la suppression
+   */
+  async delete(id: number): Promise<boolean> {
+    try {
+      const result = await db.execute('DELETE FROM diagnostic_questions WHERE id = ?', [id]);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'événement:', error);
+      return false;
     }
   }
 }
@@ -107,35 +179,172 @@ export class DiagnosticEventModel extends BaseModel<DiagnosticEvent> {
 /**
  * Modèle pour la gestion des résultats de diagnostic
  */
-export class DiagnosticResultModel extends BaseModel<DiagnosticResult> {
-  constructor() {
-    super("diagnostic_results");
+export class DiagnosticResultModel {
+  /**
+   * Récupère tous les résultats de diagnostic
+   * @returns Promesse avec la liste des résultats
+   */
+  async getAll(): Promise<DiagnosticResult[]> {
+    try {
+      const results = await db.query('SELECT * FROM diagnostic_results ORDER BY created_at DESC');
+      
+      // Ajout des événements sélectionnés pour chaque résultat
+      for (const result of results) {
+        result.selected_events = await this.getEventsForResult(result.id);
+      }
+      
+      return results as DiagnosticResult[];
+    } catch (error) {
+      console.error('Erreur lors de la récupération des résultats:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Récupère un résultat par son ID avec les événements associés
+   * @param id ID du résultat
+   * @returns Promesse avec le résultat ou null
+   */
+  async getById(id: number): Promise<DiagnosticResult | null> {
+    try {
+      const result = await db.queryOne('SELECT * FROM diagnostic_results WHERE id = ?', [id]);
+      
+      if (!result) {
+        return null;
+      }
+      
+      // Récupérer les événements associés
+      const diagnosticResult = result as DiagnosticResult;
+      diagnosticResult.selected_events = await this.getEventsForResult(id);
+      
+      return diagnosticResult;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du résultat:', error);
+      return null;
+    }
   }
 
   /**
    * Récupère les résultats d'un utilisateur
    * @param userId ID de l'utilisateur
-   * @returns Liste des résultats de l'utilisateur
+   * @returns Promesse avec la liste des résultats
    */
   async getByUserId(userId: number): Promise<DiagnosticResult[]> {
-    return this.data
-      .filter(result => result.userId === userId)
-      .map(result => ({ ...result }));
+    try {
+      const results = await db.query(
+        'SELECT * FROM diagnostic_results WHERE user_id = ? ORDER BY created_at DESC',
+        [userId]
+      );
+      
+      // Récupérer les événements pour chaque résultat
+      for (const result of results) {
+        result.selected_events = await this.getEventsForResult(result.id);
+      }
+      
+      return results as DiagnosticResult[];
+    } catch (error) {
+      console.error('Erreur lors de la récupération des résultats de l\'utilisateur:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Récupère les événements associés à un résultat
+   * @param resultId ID du résultat
+   * @returns Promesse avec la liste des événements
+   */
+  private async getEventsForResult(resultId: number): Promise<DiagnosticEvent[]> {
+    try {
+      // Pour la nouvelle structure où les questions sont stockées en JSON dans la colonne selected_questions
+      const result = await db.queryOne('SELECT selected_questions FROM diagnostic_results WHERE id = ?', [resultId]);
+      
+      if (result && result.selected_questions) {
+        // Parsez la liste d'IDs JSON
+        const questionIds = JSON.parse(result.selected_questions);
+        
+        if (Array.isArray(questionIds) && questionIds.length > 0) {
+          // Récupérez les questions correspondantes
+          const questions = await db.query(
+            `SELECT q.* 
+             FROM diagnostic_questions q
+             WHERE q.id IN (${questionIds.join(',')})
+             ORDER BY q.order_num`
+          );
+          
+          return questions as DiagnosticEvent[];
+        }
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Erreur lors de la récupération des événements du résultat:', error);
+      return [];
+    }
   }
 
   /**
    * Crée un nouveau résultat de diagnostic
    * @param userId ID de l'utilisateur (peut être null)
-   * @param selectedEvents IDs des événements sélectionnés
+   * @param eventIds IDs des événements sélectionnés
    * @param score Score calculé
-   * @returns Le résultat créé
+   * @returns Promesse avec le résultat créé
    */
-  async createResult(userId: number | null, selectedEvents: number[], score: number): Promise<DiagnosticResult> {
-    return this.create({
-      userId,
-      selectedEvents,
-      score,
-      createdAt: new Date().toISOString()
-    });
+  async create(userId: number | null, eventIds: number[], score: number): Promise<DiagnosticResult> {
+    try {
+      // Déterminer le niveau de stress
+      let stressLevel = "";
+      
+      if (score < 150) {
+        stressLevel = "Faible risque";
+      } else if (score < 300) {
+        stressLevel = "Risque modéré";
+      } else {
+        stressLevel = "Risque élevé";
+      }
+      
+      // Stocker les IDs des questions en tant que JSON
+      const selectedQuestionsJson = JSON.stringify(eventIds);
+      
+      const result = await db.execute(
+        `INSERT INTO diagnostic_results 
+         (user_id, score, stress_level, selected_questions, created_at)
+         VALUES (?, ?, ?, ?, datetime('now'))`,
+        [userId, score, stressLevel, selectedQuestionsJson]
+      );
+      
+      const newResultId = result.lastInsertId;
+      const newResult = await this.getById(newResultId);
+      
+      if (!newResult) {
+        throw new Error("Impossible de récupérer le résultat créé");
+      }
+      
+      return newResult;
+    } catch (error) {
+      console.error('Erreur lors de la création du résultat:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Supprime un résultat de diagnostic
+   * @param id ID du résultat
+   * @returns Promesse avec le succès de la suppression
+   */
+  async delete(id: number): Promise<boolean> {
+    try {
+      const result = await db.execute('DELETE FROM diagnostic_results WHERE id = ?', [id]);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Erreur lors de la suppression du résultat:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Pour la compatibilité avec l'ancien code
+   */
+  async createResult(userId: number | null, eventIds: number[], score: number): Promise<DiagnosticResult> {
+    return this.create(userId, eventIds, score);
   }
 } 
