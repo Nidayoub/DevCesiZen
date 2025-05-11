@@ -1,0 +1,31 @@
+{
+  "name": "cesi-zen-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "start": "NODE_ENV=production bun src/index.ts",
+    "build": "bun run build.ts",
+    "setup-email": "node setup-email-config.js",
+    "toggle-email-test": "node toggle-email-test-mode.js",
+    "rebuild-db": "node rebuild-database.cjs",
+    "add-resources": "node add-resources.cjs"
+  },
+  "dependencies": {
+    "@elysiajs/jwt": "^1.3.0",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^1.0.2",
+    "elysia": "^1.3.1",
+    "jose": "^6.0.11",
+    "nodemailer": "^7.0.3",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie": "^0.6.0",
+    "@types/bun": "latest"
+  }
+}

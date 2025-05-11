@@ -1,0 +1,525 @@
+{
+  "data": [
+    {
+      "title": "Décès du conjoint",
+      "description": "Perte du conjoint par décès",
+      "points": 100,
+      "category": "Familial",
+      "order": 1,
+      "id": 1
+    },
+    {
+      "title": "Divorce",
+      "description": "Dissolution légale du mariage",
+      "points": 73,
+      "category": "Familial",
+      "order": 2,
+      "id": 2
+    },
+    {
+      "title": "Séparation conjugale",
+      "description": "Séparation du conjoint",
+      "points": 65,
+      "category": "Familial",
+      "order": 3,
+      "id": 3
+    },
+    {
+      "title": "Emprisonnement",
+      "description": "Période d'incarcération",
+      "points": 63,
+      "category": "Personnel",
+      "order": 4,
+      "id": 4
+    },
+    {
+      "title": "Décès d'un proche parent",
+      "description": "Perte d'un membre de la famille proche",
+      "points": 63,
+      "category": "Familial",
+      "order": 5,
+      "id": 5
+    },
+    {
+      "title": "Blessure ou maladie personnelle",
+      "description": "Problème de santé majeur",
+      "points": 53,
+      "category": "Santé",
+      "order": 6,
+      "id": 6
+    },
+    {
+      "title": "Mariage",
+      "description": "Union maritale",
+      "points": 50,
+      "category": "Familial",
+      "order": 7,
+      "id": 7
+    },
+    {
+      "title": "Licenciement",
+      "description": "Perte d'emploi",
+      "points": 47,
+      "category": "Professionnel",
+      "order": 8,
+      "id": 8
+    },
+    {
+      "title": "Réconciliation conjugale",
+      "description": "Réconciliation avec le conjoint",
+      "points": 45,
+      "category": "Familial",
+      "order": 9,
+      "id": 9
+    },
+    {
+      "title": "Retraite",
+      "description": "Fin de la carrière professionnelle",
+      "points": 45,
+      "category": "Professionnel",
+      "order": 10,
+      "id": 10
+    },
+    {
+      "title": "Changement de santé d'un membre de la famille",
+      "description": "Problème de santé d'un proche",
+      "points": 44,
+      "category": "Familial",
+      "order": 11,
+      "id": 11
+    },
+    {
+      "title": "Grossesse",
+      "description": "Attente d'un enfant",
+      "points": 40,
+      "category": "Familial",
+      "order": 12,
+      "id": 12
+    },
+    {
+      "title": "Difficultés sexuelles",
+      "description": "Problèmes dans la vie sexuelle",
+      "points": 39,
+      "category": "Personnel",
+      "order": 13,
+      "id": 13
+    },
+    {
+      "title": "Arrivée d'un nouvel enfant",
+      "description": "Naissance ou adoption",
+      "points": 39,
+      "category": "Familial",
+      "order": 14,
+      "id": 14
+    },
+    {
+      "title": "Réajustement professionnel",
+      "description": "Changement majeur au travail",
+      "points": 39,
+      "category": "Professionnel",
+      "order": 15,
+      "id": 15
+    },
+    {
+      "title": "Changement de situation financière",
+      "description": "Amélioration ou détérioration significative",
+      "points": 38,
+      "category": "Financier",
+      "order": 16,
+      "id": 16
+    },
+    {
+      "title": "Décès d'un ami proche",
+      "description": "Perte d'un ami important",
+      "points": 37,
+      "category": "Personnel",
+      "order": 17,
+      "id": 17
+    },
+    {
+      "title": "Changement de métier",
+      "description": "Changement de type de travail",
+      "points": 36,
+      "category": "Professionnel",
+      "order": 18,
+      "id": 18
+    },
+    {
+      "title": "Changement dans les relations avec le conjoint",
+      "description": "Plus ou moins de discussions",
+      "points": 35,
+      "category": "Familial",
+      "order": 19,
+      "id": 19
+    },
+    {
+      "title": "Contraction d'un prêt important",
+      "description": "Prêt immobilier ou professionnel",
+      "points": 31,
+      "category": "Financier",
+      "order": 20,
+      "id": 20
+    },
+    {
+      "title": "Saisie d'hypothèque ou de prêt",
+      "description": "Impossibilité de rembourser",
+      "points": 30,
+      "category": "Financier",
+      "order": 21,
+      "id": 21
+    },
+    {
+      "title": "Changement de responsabilités au travail",
+      "description": "Promotion, rétrogradation, mutation",
+      "points": 29,
+      "category": "Professionnel",
+      "order": 22,
+      "id": 22
+    },
+    {
+      "title": "Départ d'un enfant du foyer",
+      "description": "Enfant quittant la maison",
+      "points": 29,
+      "category": "Familial",
+      "order": 23,
+      "id": 23
+    },
+    {
+      "title": "Problèmes avec la belle-famille",
+      "description": "Conflits familiaux",
+      "points": 29,
+      "category": "Familial",
+      "order": 24,
+      "id": 24
+    },
+    {
+      "title": "Réussite personnelle marquante",
+      "description": "Accomplissement personnel important",
+      "points": 28,
+      "category": "Personnel",
+      "order": 25,
+      "id": 25
+    },
+    {
+      "title": "Conjoint commençant ou arrêtant de travailler",
+      "description": "Changement professionnel du conjoint",
+      "points": 26,
+      "category": "Familial",
+      "order": 26,
+      "id": 26
+    },
+    {
+      "title": "Début ou fin d'études",
+      "description": "Entrée ou sortie du système éducatif",
+      "points": 26,
+      "category": "Personnel",
+      "order": 27,
+      "id": 27
+    },
+    {
+      "title": "Changement de conditions de vie",
+      "description": "Modification du confort ou de l'environnement",
+      "points": 25,
+      "category": "Personnel",
+      "order": 28,
+      "id": 28
+    },
+    {
+      "title": "Révision des habitudes personnelles",
+      "description": "Changement de mode de vie",
+      "points": 24,
+      "category": "Personnel",
+      "order": 29,
+      "id": 29
+    },
+    {
+      "title": "Difficultés avec un supérieur",
+      "description": "Problèmes avec un responsable au travail",
+      "points": 23,
+      "category": "Professionnel",
+      "order": 30,
+      "id": 30
+    },
+    {
+      "title": "Changement d'horaires ou de conditions de travail",
+      "description": "Modification du cadre professionnel",
+      "points": 20,
+      "category": "Professionnel",
+      "order": 31,
+      "id": 31
+    },
+    {
+      "title": "Déménagement",
+      "description": "Changement de lieu de résidence",
+      "points": 20,
+      "category": "Personnel",
+      "order": 32,
+      "id": 32
+    },
+    {
+      "title": "Changement d'école",
+      "description": "Nouvel établissement scolaire",
+      "points": 20,
+      "category": "Personnel",
+      "order": 33,
+      "id": 33
+    },
+    {
+      "title": "Changement dans les loisirs",
+      "description": "Modification des activités récréatives",
+      "points": 19,
+      "category": "Personnel",
+      "order": 34,
+      "id": 34
+    },
+    {
+      "title": "Changement dans les activités religieuses",
+      "description": "Augmentation ou diminution",
+      "points": 19,
+      "category": "Personnel",
+      "order": 35,
+      "id": 35
+    },
+    {
+      "title": "Changement dans les activités sociales",
+      "description": "Modification des habitudes sociales",
+      "points": 18,
+      "category": "Personnel",
+      "order": 36,
+      "id": 36
+    },
+    {
+      "title": "Petit emprunt",
+      "description": "Crédit à la consommation",
+      "points": 17,
+      "category": "Financier",
+      "order": 37,
+      "id": 37
+    },
+    {
+      "title": "Changement dans les habitudes de sommeil",
+      "description": "Modification du rythme ou de la qualité",
+      "points": 16,
+      "category": "Personnel",
+      "order": 38,
+      "id": 38
+    },
+    {
+      "title": "Changement dans les habitudes alimentaires",
+      "description": "Modification du régime alimentaire",
+      "points": 15,
+      "category": "Personnel",
+      "order": 39,
+      "id": 39
+    },
+    {
+      "title": "Vacances",
+      "description": "Période de congés",
+      "points": 13,
+      "category": "Personnel",
+      "order": 40,
+      "id": 40
+    },
+    {
+      "title": "Fêtes de fin d'année",
+      "description": "Période des festivités",
+      "points": 12,
+      "category": "Personnel",
+      "order": 41,
+      "id": 41
+    },
+    {
+      "title": "Petite infraction légale",
+      "description": "Contravention, amende",
+      "points": 11,
+      "category": "Personnel",
+      "order": 42,
+      "id": 42
+    },
+    {
+      "title": "Échec à un examen important",
+      "description": "Non-obtention d'un diplôme ou certification attendue",
+      "points": 45,
+      "category": "Personnel",
+      "order": 43,
+      "id": 43
+    },
+    {
+      "title": "Déménagement à l'étranger",
+      "description": "Expatriation dans un nouveau pays",
+      "points": 42,
+      "category": "Personnel",
+      "order": 44,
+      "id": 44
+    },
+    {
+      "title": "Problèmes avec les voisins",
+      "description": "Conflits ou tensions avec le voisinage",
+      "points": 28,
+      "category": "Personnel",
+      "order": 45,
+      "id": 45
+    },
+    {
+      "title": "Projet professionnel majeur",
+      "description": "Responsabilité d'un projet important au travail",
+      "points": 32,
+      "category": "Professionnel",
+      "order": 46,
+      "id": 46
+    },
+    {
+      "title": "Changement d'équipe ou de manager",
+      "description": "Modification de l'environnement direct de travail",
+      "points": 25,
+      "category": "Professionnel",
+      "order": 47,
+      "id": 47
+    },
+    {
+      "title": "Panne ou accident de voiture",
+      "description": "Problème avec le véhicule principal",
+      "points": 19,
+      "category": "Personnel",
+      "order": 48,
+      "id": 48
+    },
+    {
+      "title": "Travaux importants dans le logement",
+      "description": "Rénovation majeure ou perturbation de l'habitat",
+      "points": 22,
+      "category": "Personnel",
+      "order": 49,
+      "id": 49
+    },
+    {
+      "title": "Changement d'orientation professionnelle",
+      "description": "Reconversion ou changement majeur de carrière",
+      "points": 36,
+      "category": "Professionnel",
+      "order": 50,
+      "id": 50
+    },
+    {
+      "title": "Prise en charge d'un parent âgé",
+      "description": "Nouvelle responsabilité familiale significative",
+      "points": 34,
+      "category": "Familial",
+      "order": 51,
+      "id": 51
+    },
+    {
+      "title": "Difficulté financière temporaire",
+      "description": "Période de restriction budgétaire",
+      "points": 30,
+      "category": "Financier",
+      "order": 52,
+      "id": 52
+    },
+    {
+      "title": "Conflit avec un ami proche",
+      "description": "Tension ou rupture dans une amitié importante",
+      "points": 27,
+      "category": "Personnel",
+      "order": 53,
+      "id": 53
+    },
+    {
+      "title": "Changement des habitudes sociales",
+      "description": "Modification significative du cercle d'amis ou des activités",
+      "points": 18,
+      "category": "Personnel",
+      "order": 54,
+      "id": 54
+    },
+    {
+      "title": "Début d'une activité entrepreneuriale",
+      "description": "Lancement d'un projet d'entreprise ou d'auto-entrepreneuriat",
+      "points": 40,
+      "category": "Professionnel",
+      "order": 55,
+      "id": 55
+    },
+    {
+      "title": "Anxiété persistante",
+      "description": "Sensation constante d'inquiétude ou de nervosité difficile à contrôler",
+      "points": 45,
+      "category": "Émotions",
+      "order": 101,
+      "id": 101
+    },
+    {
+      "title": "Tristesse ou mélancolie",
+      "description": "Sentiment de tristesse persistant qui affecte votre humeur quotidienne",
+      "points": 40,
+      "category": "Émotions",
+      "order": 102,
+      "id": 102
+    },
+    {
+      "title": "Irritabilité fréquente",
+      "description": "Vous vous sentez facilement irrité(e) ou agacé(e) par des situations ordinaires",
+      "points": 35,
+      "category": "Émotions",
+      "order": 103,
+      "id": 103
+    },
+    {
+      "title": "Sentiment d'être dépassé(e)",
+      "description": "Impression d'être submergé(e) par les responsabilités ou les attentes",
+      "points": 50,
+      "category": "Émotions",
+      "order": 104,
+      "id": 104
+    },
+    {
+      "title": "Colère incontrôlable",
+      "description": "Épisodes de colère intense difficiles à maîtriser",
+      "points": 47,
+      "category": "Émotions",
+      "order": 105,
+      "id": 105
+    },
+    {
+      "title": "Peur inexpliquée",
+      "description": "Sentiment de peur ou d'appréhension sans cause apparente",
+      "points": 38,
+      "category": "Émotions",
+      "order": 106,
+      "id": 106
+    },
+    {
+      "title": "Variations d'humeur importantes",
+      "description": "Changements brusques et fréquents entre différents états émotionnels",
+      "points": 42,
+      "category": "Émotions",
+      "order": 107,
+      "id": 107
+    },
+    {
+      "title": "Sentiment d'isolement émotionnel",
+      "description": "Impression d'être seul(e) avec ses émotions, même entouré(e)",
+      "points": 39,
+      "category": "Émotions",
+      "order": 108,
+      "id": 108
+    },
+    {
+      "title": "Apathie ou manque d'intérêt",
+      "description": "Perte d'envie ou d'enthousiasme pour des activités habituellement appréciées",
+      "points": 44,
+      "category": "Émotions",
+      "order": 109,
+      "id": 109
+    },
+    {
+      "title": "Culpabilité excessive",
+      "description": "Tendance à se sentir responsable ou coupable de façon disproportionnée",
+      "points": 36,
+      "category": "Émotions",
+      "order": 110,
+      "id": 110
+    }
+  ],
+  "autoIncrement": 111
+}
