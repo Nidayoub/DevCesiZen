@@ -1,0 +1,5 @@
+node_modules/
+*.sqlite
+data/
+CesiZenMobile/node_modules/
+BackCesiZen/node_modules/
