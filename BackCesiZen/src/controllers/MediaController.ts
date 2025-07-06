@@ -1,6 +1,7 @@
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { verifyToken } from '../utils/jwt';
+import { parse } from 'cookie';
 
 export class MediaController {
   private static readonly UPLOAD_DIR = './uploads';
@@ -20,10 +21,13 @@ export class MediaController {
    */
   static async uploadMedia(req: Request): Promise<Response> {
     try {
-      // Vérifier l'authentification
-      const token = req.headers.get('Authorization')?.split(' ')[1];
+      // Vérifier l'authentification via les cookies
+      const cookies = req.headers.get('Cookie') || '';
+      const parsedCookies = parse(cookies);
+      const token = parsedCookies.authToken;
+      
       if (!token) {
-        return new Response(JSON.stringify({ error: 'Token manquant' }), {
+        return new Response(JSON.stringify({ error: 'Non autorisé' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' }
         });
@@ -76,7 +80,11 @@ export class MediaController {
 
       // Déterminer le type de média
       const mediaType = this.getMediaType(file.type);
-      const mediaUrl = `/uploads/${filename}`;
+      
+      // Construire l'URL complète pour les médias
+      const requestUrl = new URL(req.url);
+      const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+      const mediaUrl = `${baseUrl}/uploads/${filename}`;
 
       return new Response(JSON.stringify({
         success: true,

@@ -95,7 +95,8 @@ export default function ResourceDetailPage() {
         month: 'long',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        timeZone: 'Europe/Paris' // Ajout du fuseau horaire français
       }).format(date);
     } catch (error) {
       console.error('Erreur de formatage de date:', error, 'pour la valeur:', dateString);
@@ -378,7 +379,7 @@ export default function ResourceDetailPage() {
                     </div>
                   ) : (
         <div>
-                    <p className="text-gray-700">{comment.message}</p>
+                    <p className="text-gray-900">{comment.message}</p>
           
           {/* Bouton de réponse (seulement pour les commentaires principaux) */}
           {!isReply && isAuthenticated && (
@@ -507,13 +508,39 @@ export default function ResourceDetailPage() {
             {/* Contenu de l'article */}
             <div className="prose prose-indigo prose-lg max-w-none mb-8 text-gray-800" dangerouslySetInnerHTML={{ __html: resource.content }} />
 
+            {/* Média (si présent) */}
+            {resource.media_url && (
+              <div className="mb-8">
+                {resource.media_type === 'image' && (
+                  <div className="rounded-lg overflow-hidden shadow-lg">
+                    <img 
+                      src={resource.media_url} 
+                      alt={resource.title}
+                      className="w-full h-auto max-h-96 object-cover"
+                    />
+                  </div>
+                )}
+                {resource.media_type === 'video' && (
+                  <div className="rounded-lg overflow-hidden shadow-lg">
+                    <video 
+                      controls 
+                      src={resource.media_url}
+                      className="w-full h-auto max-h-96"
+                    >
+                      Votre navigateur ne supporte pas la lecture de vidéos.
+                    </video>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Interactions */}
             <div className="border-t border-gray-200 pt-6 mt-8">
               <div className="flex flex-wrap items-center gap-4">
                 <button
                   onClick={handleLikeToggle}
                   className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${
-                    isLiked ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    isLiked ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
                   <svg 
@@ -527,7 +554,7 @@ export default function ResourceDetailPage() {
                   <span>{likeCount} J'aime</span>
                 </button>
                 
-                <div className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700">
+                <div className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900">
                   <svg className="w-5 h-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
                     <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
@@ -563,7 +590,7 @@ export default function ResourceDetailPage() {
                 </div>
               ) : (
                 <div className="mt-6 bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-gray-700 mb-2">Connectez-vous pour ajouter un commentaire</p>
+                  <p className="text-gray-900 mb-2">Connectez-vous pour ajouter un commentaire</p>
                   <Link href="/login" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Se connecter
                   </Link>

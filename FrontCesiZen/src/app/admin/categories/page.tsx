@@ -11,8 +11,6 @@ interface ResourceCategory {
   id: number;
   name: string;
   description?: string;
-  icon?: string;
-  color?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -39,9 +37,7 @@ export default function AdminCategoriesPage() {
   const [editingResourceCategory, setEditingResourceCategory] = useState<ResourceCategory | null>(null);
   const [resourceForm, setResourceForm] = useState({
     name: '',
-    description: '',
-    icon: '',
-    color: '#6B7280'
+    description: ''
   });
   
   // États pour les catégories de diagnostic
@@ -123,7 +119,7 @@ export default function AdminCategoriesPage() {
       
       setShowResourceModal(false);
       setEditingResourceCategory(null);
-      setResourceForm({ name: '', description: '', icon: '', color: '#6B7280' });
+      setResourceForm({ name: '', description: '' });
       await loadResourceCategories();
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
@@ -206,13 +202,11 @@ export default function AdminCategoriesPage() {
       setEditingResourceCategory(category);
       setResourceForm({
         name: category.name,
-        description: category.description || '',
-        icon: category.icon || '',
-        color: category.color || '#6B7280'
+        description: category.description || ''
       });
     } else {
       setEditingResourceCategory(null);
-      setResourceForm({ name: '', description: '', icon: '', color: '#6B7280' });
+      setResourceForm({ name: '', description: '' });
     }
     setShowResourceModal(true);
   };
@@ -245,7 +239,7 @@ export default function AdminCategoriesPage() {
                 <div className="px-4 py-5 sm:p-6">
                   <div className="flex justify-between items-center mb-8">
                     <div>
-                      <h1 className="text-2xl font-bold text-gray-900">🏷️ Gestion des catégories</h1>
+                      <h1 className="text-2xl font-bold text-gray-900">Gestion des catégories</h1>
                       <p className="mt-1 text-sm text-gray-600">
                         Gérez les catégories pour les ressources et les questions de diagnostic
                       </p>
@@ -263,7 +257,7 @@ export default function AdminCategoriesPage() {
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                         }`}
                       >
-                        📚 Catégories de ressources
+                        Catégories de ressources
                         <span className="ml-2 bg-gray-100 text-gray-900 text-xs rounded-full px-2 py-1">
                           {resourceCategories.length}
                         </span>
@@ -308,7 +302,7 @@ export default function AdminCategoriesPage() {
                           onClick={() => openResourceModal()}
                           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                          ✨ Ajouter une catégorie
+                          Ajouter une catégorie
                         </button>
                       </div>
 
@@ -323,9 +317,6 @@ export default function AdminCategoriesPage() {
                             <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center">
-                                  <span className="text-2xl mr-2" style={{ color: category.color }}>
-                                    {category.icon || '📚'}
-                                  </span>
                                   <h3 className="text-lg font-medium text-gray-900">{category.name}</h3>
                                 </div>
                                 <div className="flex space-x-2">
@@ -346,13 +337,6 @@ export default function AdminCategoriesPage() {
                               {category.description && (
                                 <p className="text-sm text-gray-600 mb-2">{category.description}</p>
                               )}
-                              <div className="flex items-center text-xs text-gray-500">
-                                <div
-                                  className="w-3 h-3 rounded-full mr-2"
-                                  style={{ backgroundColor: category.color }}
-                                ></div>
-                                {category.color}
-                              </div>
                             </div>
                           ))}
                         </div>
@@ -412,9 +396,11 @@ export default function AdminCategoriesPage() {
                                   ></div>
                                   {category.color}
                                 </div>
-                                <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                                  {category.question_count || 0} questions
-                                </span>
+                                {category.question_count !== undefined && (
+                                  <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                                    {category.question_count} question{category.question_count !== 1 ? 's' : ''}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -439,7 +425,9 @@ export default function AdminCategoriesPage() {
                   <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div className="sm:flex sm:items-start">
                       <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <span className="text-2xl">📚</span>
+                        <svg className="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
                       </div>
                       <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                         <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -448,7 +436,7 @@ export default function AdminCategoriesPage() {
                         <div className="mt-6 space-y-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              📝 Nom de la catégorie *
+                              Nom de la catégorie *
                             </label>
                             <input
                               type="text"
@@ -462,7 +450,7 @@ export default function AdminCategoriesPage() {
                           
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              📄 Description
+                              Description
                             </label>
                             <textarea
                               rows={3}
@@ -470,54 +458,6 @@ export default function AdminCategoriesPage() {
                               value={resourceForm.description}
                               onChange={(e) => setResourceForm({...resourceForm, description: e.target.value})}
                               placeholder="Description de la catégorie"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              🎯 Icône
-                            </label>
-                            <div className="grid grid-cols-10 gap-2 mb-2">
-                              {emojiIcons.map((emoji, index) => (
-                                <button
-                                  key={index}
-                                  type="button"
-                                  onClick={() => setResourceForm({...resourceForm, icon: emoji})}
-                                  className={`p-2 rounded border ${resourceForm.icon === emoji ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'}`}
-                                >
-                                  {emoji}
-                                </button>
-                              ))}
-                            </div>
-                            <input
-                              type="text"
-                              className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                              value={resourceForm.icon}
-                              onChange={(e) => setResourceForm({...resourceForm, icon: e.target.value})}
-                              placeholder="Ou tapez votre propre emoji"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              🎨 Couleur
-                            </label>
-                            <div className="grid grid-cols-9 gap-2 mb-2">
-                              {defaultColors.map((color, index) => (
-                                <button
-                                  key={index}
-                                  type="button"
-                                  onClick={() => setResourceForm({...resourceForm, color})}
-                                  className={`w-8 h-8 rounded border-2 ${resourceForm.color === color ? 'border-gray-800' : 'border-gray-300'}`}
-                                  style={{ backgroundColor: color }}
-                                />
-                              ))}
-                            </div>
-                            <input
-                              type="color"
-                              className="block w-full h-10 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                              value={resourceForm.color}
-                              onChange={(e) => setResourceForm({...resourceForm, color: e.target.value})}
                             />
                           </div>
                         </div>

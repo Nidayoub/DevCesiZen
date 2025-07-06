@@ -1,7 +1,54 @@
 node_modules/
 *.sqlite
+*.db
 data/
 CesiZenMobile/node_modules/
 BackCesiZen/node_modules/
 ngrok.exe
-BackCesiZen/cesizen.db
+
+# Uploads d'utilisateurs
+BackCesiZen/uploads/
+FrontCesiZen/uploads/
+AppMobile/uploads/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Fichiers temporaires et sauvegarde
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+*~
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.code-workspace
+.history/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Fichiers de build personnalisés
+build/
+dist/
+out/
+
+# Fichiers de configuration locale
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
