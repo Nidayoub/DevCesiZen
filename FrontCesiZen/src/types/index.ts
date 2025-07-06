@@ -40,6 +40,37 @@ export interface InfoPage {
   updated_at: string;
 }
 
+// Type de ressource d'information
+export interface InfoResource {
+  id: number;
+  title: string;
+  summary: string;
+  content: string;
+  category: string;
+  author_id: number;
+  publication_date: string;
+  modification_date: string;
+  reading_time?: string;
+  level?: string;
+  views: number;
+  shares: number;
+  likes_count?: number;
+  comments_count?: number;
+  tags?: string[];
+  media_type?: 'image' | 'video' | null;
+  media_url?: string;
+  media_filename?: string;
+}
+
+// Type de média uploadé
+export interface MediaUpload {
+  type: 'image' | 'video';
+  url: string;
+  filename: string;
+  originalName: string;
+  size: number;
+}
+
 // Type d'événement de stress
 export interface StressEvent {
   id: number;

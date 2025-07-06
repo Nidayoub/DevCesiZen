@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import MainLayout from '../../../components/MainLayout';
 import { infoResourcesApi } from '../../../services/api.service';
 import Link from 'next/link';
@@ -22,66 +21,18 @@ interface InfoResource {
 }
 
 export default function InfoResourcesPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const category = searchParams.get('category');
-  const tag = searchParams.get('tag');
-
   const [resources, setResources] = useState<InfoResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [tags, setTags] = useState<{id: number, name: string}[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // URL de base pour toutes les requêtes API
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-        console.log('API Base URL:', apiBaseUrl);
-        
-        let resourcesData = [];
-        
-        // Récupérer les ressources en fonction des filtres
-        let url;
-        if (category) {
-          url = `${apiBaseUrl}/api/info/resources/category/${encodeURIComponent(category)}`;
-        } else if (tag) {
-          url = `${apiBaseUrl}/api/info/resources/tag/${encodeURIComponent(tag)}`;
-        } else {
-          url = `${apiBaseUrl}/api/info/resources`;
-        }
-        
-        console.log('Fetching resources from:', url);
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`API Error: ${response.status} - ${errorText}`);
-          throw new Error(`Erreur lors de la récupération des données: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        resourcesData = data.resources;
-        setResources(resourcesData);
-        
-        // Récupérer les tags disponibles
-        const tagsResponse = await fetch(`${apiBaseUrl}/api/info/tags`);
-        if (tagsResponse.ok) {
-          const tagsData = await tagsResponse.json();
-          setTags(tagsData.tags);
-        }
-        
-        // Extraire les catégories uniques des ressources
-        const uniqueCategories = Array.from(
-          new Set(resourcesData.map((res: InfoResource) => res.category))
-        );
-        setCategories(uniqueCategories);
-        
+        const response = await infoResourcesApi.getAll();
+        setResources(response.data?.resources || []);
         setLoading(false);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Erreur lors de la récupération des ressources:', err);
         setError(`Impossible de charger les ressources: ${err.message}`);
         setLoading(false);
@@ -89,7 +40,7 @@ export default function InfoResourcesPage() {
     };
 
     fetchData();
-  }, [category, tag]);
+  }, []);
 
   // Formater la date pour l'affichage
   const formatDate = (dateString: string) => {
@@ -111,42 +62,20 @@ export default function InfoResourcesPage() {
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
             Découvrez nos articles sur le stress, ses effets et comment améliorer votre bien-être mental.
           </p>
-        </div>
-
-        {/* Filtres */}
-        <div className="mt-8 mb-10">
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-6">
             <Link 
-              href="/info/resources" 
-              className={`px-4 py-2 rounded-full text-sm font-medium ${!category && !tag ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+              href="/resources/new" 
+              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors duration-200"
             >
-              Tous
+              <svg className="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Créer une ressource
             </Link>
-            
-            {categories.map((cat) => (
-              <Link 
-                key={cat} 
-                href={`/info/resources?category=${encodeURIComponent(cat)}`}
-                className={`px-4 py-2 rounded-full text-sm font-medium ${category === cat ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
-
-          {/* Tags populaires */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            {tags.slice(0, 10).map((tag) => (
-              <Link 
-                key={tag.id} 
-                href={`/info/resources?tag=${encodeURIComponent(tag.name)}`}
-                className={`px-3 py-1 rounded-full text-xs font-medium ${searchParams.get('tag') === tag.name ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
-              >
-                #{tag.name}
-              </Link>
-            ))}
           </div>
         </div>
+
+
 
         {loading ? (
           <div className="flex justify-center mt-16">
@@ -188,50 +117,17 @@ export default function InfoResourcesPage() {
                       <h3 className="text-xl font-semibold text-gray-900 hover:text-indigo-600">{resource.title}</h3>
                       <p className="mt-3 text-base text-gray-500">{resource.summary}</p>
                     </Link>
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {resource.tags?.map((tag) => (
-                        <Link 
-                          key={tag} 
-                          href={`/info/resources?tag=${encodeURIComponent(tag)}`}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        >
-                          #{tag}
-                        </Link>
-                      ))}
-                    </div>
+
                   </div>
-                  <div className="mt-6 flex items-center">
-                    <div className="flex-1 flex divide-x divide-gray-200 text-sm text-gray-500">
-                      <div className="flex items-center pr-3">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {resource.reading_time || "5 min"}
-                      </div>
-                      <div className="flex items-center px-3">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        {resource.views}
-                      </div>
-                      <div className="flex items-center px-3">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        {resource.likes_count}
-                      </div>
-                      <div className="flex items-center pl-3">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg>
-                        {resource.comments_count}
-                      </div>
+                  <div className="mt-6 flex items-center justify-between">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <svg className="w-4 h-4 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {resource.reading_time || "5 min"}
                     </div>
-                    <div className="ml-4 flex-shrink-0">
-                      <div className="font-medium text-sm text-gray-900">
-                        {formatDate(resource.publication_date)}
-                      </div>
+                    <div className="text-sm text-gray-900">
+                      {formatDate(resource.publication_date)}
                     </div>
                   </div>
                 </div>

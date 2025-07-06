@@ -7,7 +7,11 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Général",
-      "tags": ["introduction", "bienvenue", "présentation"],
+      "tags": [
+        "introduction",
+        "bienvenue",
+        "présentation"
+      ],
       "createdAt": "2024-06-20T21:58:47.099Z",
       "updatedAt": "2024-06-20T21:58:47.099Z",
       "id": 1
@@ -19,7 +23,11 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Techniques",
-      "tags": ["respiration", "relaxation", "exercices"],
+      "tags": [
+        "respiration",
+        "relaxation",
+        "exercices"
+      ],
       "createdAt": "2024-06-20T21:58:47.099Z",
       "updatedAt": "2024-06-20T21:58:47.099Z",
       "id": 2
@@ -31,7 +39,11 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Techniques",
-      "tags": ["méditation", "mindfulness", "pleine conscience"],
+      "tags": [
+        "méditation",
+        "mindfulness",
+        "pleine conscience"
+      ],
       "createdAt": "2024-06-20T21:58:47.100Z",
       "updatedAt": "2024-06-20T21:58:47.100Z",
       "id": 3
@@ -43,7 +55,11 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Éducation",
-      "tags": ["stress chronique", "santé", "symptômes"],
+      "tags": [
+        "stress chronique",
+        "santé",
+        "symptômes"
+      ],
       "createdAt": "2024-06-21T10:15:32.100Z",
       "updatedAt": "2024-06-21T10:15:32.100Z",
       "id": 4
@@ -55,7 +71,11 @@
       "isPublished": true,
       "authorId": 2,
       "category": "Bien-être",
-      "tags": ["sommeil", "relaxation", "hygiène de vie"],
+      "tags": [
+        "sommeil",
+        "relaxation",
+        "hygiène de vie"
+      ],
       "createdAt": "2024-06-21T14:22:45.100Z",
       "updatedAt": "2024-06-21T14:22:45.100Z",
       "id": 5
@@ -67,7 +87,12 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Bien-être",
-      "tags": ["exercice", "sport", "endorphines", "activité physique"],
+      "tags": [
+        "exercice",
+        "sport",
+        "endorphines",
+        "activité physique"
+      ],
       "createdAt": "2024-06-22T09:10:18.100Z",
       "updatedAt": "2024-06-22T09:10:18.100Z",
       "id": 6
@@ -79,7 +104,12 @@
       "isPublished": true,
       "authorId": 2,
       "category": "Bien-être",
-      "tags": ["nutrition", "alimentation", "régime", "santé"],
+      "tags": [
+        "nutrition",
+        "alimentation",
+        "régime",
+        "santé"
+      ],
       "createdAt": "2024-06-22T15:45:33.100Z",
       "updatedAt": "2024-06-22T15:45:33.100Z",
       "id": 7
@@ -91,7 +121,12 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Professionnel",
-      "tags": ["travail", "burnout", "équilibre", "carrière"],
+      "tags": [
+        "travail",
+        "burnout",
+        "équilibre",
+        "carrière"
+      ],
       "createdAt": "2024-06-23T11:20:15.100Z",
       "updatedAt": "2024-06-23T11:20:15.100Z",
       "id": 8
@@ -103,7 +138,12 @@
       "isPublished": true,
       "authorId": 2,
       "category": "Techniques",
-      "tags": ["pleine conscience", "quotidien", "mindfulness", "pratique"],
+      "tags": [
+        "pleine conscience",
+        "quotidien",
+        "mindfulness",
+        "pratique"
+      ],
       "createdAt": "2024-06-23T16:40:22.100Z",
       "updatedAt": "2024-06-23T16:40:22.100Z",
       "id": 9
@@ -115,7 +155,12 @@
       "isPublished": true,
       "authorId": 1,
       "category": "Éducation",
-      "tags": ["immunité", "santé", "système immunitaire", "inflammation"],
+      "tags": [
+        "immunité",
+        "santé",
+        "système immunitaire",
+        "inflammation"
+      ],
       "createdAt": "2024-06-24T10:05:17.100Z",
       "updatedAt": "2024-06-24T10:05:17.100Z",
       "id": 10
@@ -127,7 +172,13 @@
       "isPublished": true,
       "authorId": 12,
       "category": "Éducation",
-      "tags": ["neurobiologie", "cerveau", "neuroscience", "cortisol", "hippocampe"],
+      "tags": [
+        "neurobiologie",
+        "cerveau",
+        "neuroscience",
+        "cortisol",
+        "hippocampe"
+      ],
       "createdAt": "2024-06-24T14:22:33.100Z",
       "updatedAt": "2024-06-24T14:22:33.100Z",
       "id": 11
@@ -139,7 +190,13 @@
       "isPublished": true,
       "authorId": 13,
       "category": "Bien-être",
-      "tags": ["nature", "écothérapie", "bain de forêt", "bien-être", "environnement"],
+      "tags": [
+        "nature",
+        "écothérapie",
+        "bain de forêt",
+        "bien-être",
+        "environnement"
+      ],
       "createdAt": "2024-06-26T11:15:44.100Z",
       "updatedAt": "2024-06-26T11:15:44.100Z",
       "id": 14
@@ -151,11 +208,37 @@
       "isPublished": true,
       "authorId": 12,
       "category": "Bien-être",
-      "tags": ["relations", "soutien social", "amitiés", "connexion", "isolement"],
+      "tags": [
+        "relations",
+        "soutien social",
+        "amitiés",
+        "connexion",
+        "isolement"
+      ],
       "createdAt": "2024-06-26T16:40:19.100Z",
       "updatedAt": "2024-06-26T16:40:19.100Z",
       "id": 15
+    },
+    {
+      "title": "zefzezsdef",
+      "slug": "zefzezsdef",
+      "content": "sqzefzsqdefcdqs",
+      "isPublished": true,
+      "authorId": 7,
+      "createdAt": "2025-07-05T14:18:58.926Z",
+      "updatedAt": "2025-07-05T14:18:58.926Z",
+      "id": 16
+    },
+    {
+      "title": "czqerfesrgse",
+      "slug": "czqerfesrgse",
+      "content": "eqrsvgqserqvsvgeqsr",
+      "isPublished": true,
+      "authorId": 7,
+      "createdAt": "2025-07-06T12:30:36.264Z",
+      "updatedAt": "2025-07-06T12:30:36.264Z",
+      "id": 17
     }
   ],
-  "autoIncrement": 16
+  "autoIncrement": 18
 }

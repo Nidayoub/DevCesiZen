@@ -35,6 +35,14 @@ export async function infoRoutes(req: Request): Promise<Response> {
     return infoController.getAllTags(req);
   }
   
+  // GET /api/info/liked - Récupérer les ressources likées par l'utilisateur connecté
+  if (path === "/api/info/liked" && method === "GET") {
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    return infoController.getUserLikedInfoResources(req);
+  }
+  
   // GET /api/info - Liste des pages disponibles
   if (path === "/api/info" && method === "GET") {
     return infoController.getInfoList(req);
@@ -92,13 +100,10 @@ export async function infoRoutes(req: Request): Promise<Response> {
     return infoController.deleteInfo(req, id);
   }
 
-  // POST /api/info/resources - Créer une nouvelle ressource d'information (admin uniquement)
+  // POST /api/info/resources - Créer une nouvelle ressource d'information (utilisateur connecté)
   if (path === "/api/info/resources" && method === "POST") {
     const authResponse = await authMiddleware(req);
     if (authResponse) return authResponse;
-    
-    const adminResponse = await adminMiddleware(req);
-    if (adminResponse) return adminResponse;
     
     return infoController.createInfoResource(req);
   }
@@ -127,6 +132,24 @@ export async function infoRoutes(req: Request): Promise<Response> {
     return infoController.deleteInfoResource(req, id);
   }
 
+  // PUT /api/info/resources/:id/user - Mettre à jour sa propre ressource d'information (utilisateur connecté)
+  if (path.match(/^\/api\/info\/resources\/\d+\/user$/) && method === "PUT") {
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    const id = parseInt(path.split("/")[4] || "0");
+    return infoController.updateUserOwnInfoResource(req, id);
+  }
+
+  // DELETE /api/info/resources/:id/user - Supprimer sa propre ressource d'information (utilisateur connecté)
+  if (path.match(/^\/api\/info\/resources\/\d+\/user$/) && method === "DELETE") {
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    const id = parseInt(path.split("/")[4] || "0");
+    return infoController.deleteUserOwnInfoResource(req, id);
+  }
+
   // --- ROUTES POUR LES INTERACTIONS (LIKES, COMMENTAIRES, PARTAGES) ---
 
   // GET /api/info/resources/:id/comments - Récupérer les commentaires d'une ressource
@@ -142,6 +165,26 @@ export async function infoRoutes(req: Request): Promise<Response> {
     
     const resourceId = parseInt(path.split("/")[4] || "0");
     return infoController.addCommentToInfoResource(req, resourceId);
+  }
+
+  // POST /api/info/resources/:resourceId/comments/:commentId/replies - Ajouter une réponse à un commentaire (utilisateur connecté)
+  if (path.match(/^\/api\/info\/resources\/\d+\/comments\/\d+\/replies$/) && method === "POST") {
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    const resourceId = parseInt(path.split("/")[4] || "0");
+    const commentId = parseInt(path.split("/")[6] || "0");
+    return infoController.addReplyToComment(req, resourceId, commentId);
+  }
+
+  // PUT /api/info/resources/:resourceId/comments/:commentId - Modifier un commentaire (propriétaire ou admin)
+  if (path.match(/^\/api\/info\/resources\/\d+\/comments\/\d+$/) && method === "PUT") {
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    const resourceId = parseInt(path.split("/")[4] || "0");
+    const commentId = parseInt(path.split("/")[6] || "0");
+    return infoController.updateInfoResourceComment(req, resourceId, commentId);
   }
 
   // DELETE /api/info/resources/:resourceId/comments/:commentId - Supprimer un commentaire (propriétaire ou admin)
@@ -165,6 +208,9 @@ export async function infoRoutes(req: Request): Promise<Response> {
 
   // GET /api/info/resources/:id/likes - Vérifier si l'utilisateur a liké une ressource
   if (path.match(/^\/api\/info\/resources\/\d+\/likes$/) && method === "GET") {
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
     const resourceId = parseInt(path.split("/")[4] || "0");
     return infoController.checkUserLikedInfoResource(req, resourceId);
   }

@@ -74,22 +74,26 @@ class AuthService {
 
   async getCurrentUser(): Promise<User | null> {
     try {
+      console.log("🔍 Vérification de l'utilisateur actuel...");
       const response = await fetch(`${API_URL}/api/auth/me`, {
         headers: this.getHeaders(),
         credentials: 'include', // Important pour inclure les cookies
       });
 
       if (!response.ok) {
+        console.log(`❌ Requête échouée: ${response.status} ${response.statusText}`);
         this.authenticated = false;
         this.currentUser = null;
         return null;
       }
 
       const user = await response.json();
+      console.log("✅ Utilisateur récupéré:", user.email);
       this.authenticated = true;
       this.currentUser = user;
       return user;
     } catch (error) {
+      console.error('❌ Erreur lors de la récupération de l\'utilisateur actuel:', error);
       this.authenticated = false;
       this.currentUser = null;
       return null;

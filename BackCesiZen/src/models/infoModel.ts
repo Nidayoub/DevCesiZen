@@ -45,6 +45,9 @@ export interface InfoResource {
   likes_count?: number;
   comments_count?: number;
   tags?: string[];
+  media_type?: 'image' | 'video' | null;
+  media_url?: string;
+  media_filename?: string;
 }
 
 /**
@@ -56,8 +59,20 @@ export interface InfoResourceComment {
   user_id: number;
   message: string;
   comment_date: string;
+  parent_id?: number | null;
   user_firstname?: string;
   user_lastname?: string;
+  replies?: InfoResourceComment[];
+}
+
+/**
+ * Interface pour créer un commentaire/réponse
+ */
+export interface CreateCommentRequest {
+  info_resource_id: number;
+  user_id: number;
+  message: string;
+  parent_id?: number | null;
 }
 
 /**
@@ -156,76 +171,80 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Liste des ressources d'information
    */
   async getAllInfoResources(limit: number = 20, offset: number = 0): Promise<InfoResource[]> {
-    return new Promise((resolve, reject) => {
-      db.all(
+    try {
+      const resources = await db.query<InfoResource>(
         `SELECT ir.*, 
           (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,
           (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count
         FROM info_resources ir
         ORDER BY ir.publication_date DESC
         LIMIT ? OFFSET ?`,
-        [limit, offset],
-        async (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          try {
-            // Récupérer les tags pour chaque ressource
-            const resources = rows as InfoResource[];
-            for (const resource of resources) {
-              resource.tags = await this.getTagsForResource(resource.id);
-            }
-            resolve(resources);
-          } catch (error) {
-            reject(error);
-          }
-        }
+        [limit, offset]
       );
-    });
+
+      // Récupérer les tags pour chaque ressource
+      for (const resource of resources) {
+        resource.tags = await this.getTagsForResource(resource.id);
+      }
+      
+      return resources;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des ressources:', error);
+      throw error;
+    }
   }
 
   /**
-   * Récupère une ressource d'information par son ID
+   * Récupère une ressource d'information par son ID (VERSION INTERNE - sans incrémenter les vues)
    * @param id ID de la ressource
    * @returns Ressource ou null si non trouvée
    */
-  async getInfoResourceById(id: number): Promise<InfoResource | null> {
-    return new Promise((resolve, reject) => {
-      db.get(
+  async getInfoResourceByIdInternal(id: number): Promise<InfoResource | null> {
+    try {
+      const resource = await db.queryOne<InfoResource>(
         `SELECT ir.*, 
           (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,
           (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count
         FROM info_resources ir
         WHERE ir.id = ?`,
-        [id],
-        async (err, row) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          if (!row) {
-            resolve(null);
-            return;
-          }
-
-          try {
-            // Récupérer les tags pour cette ressource
-            const resource = row as InfoResource;
-            resource.tags = await this.getTagsForResource(resource.id);
-            
-            // Incrémenter le compteur de vues
-            await this.incrementResourceViews(id);
-            
-            resolve(resource);
-          } catch (error) {
-            reject(error);
-          }
-        }
+        [id]
       );
-    });
+
+      if (!resource) {
+        return null;
+      }
+
+      // Récupérer les tags pour cette ressource
+      resource.tags = await this.getTagsForResource(resource.id);
+      
+      return resource;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de la ressource:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Récupère une ressource d'information par son ID (VERSION PUBLIQUE - incrémente les vues)
+   * @param id ID de la ressource
+   * @returns Ressource ou null si non trouvée
+   */
+  async getInfoResourceById(id: number): Promise<InfoResource | null> {
+    try {
+      const resource = await this.getInfoResourceByIdInternal(id);
+      
+      if (!resource) {
+        return null;
+      }
+      
+      // Incrémenter le compteur de vues seulement pour les vraies consultations
+      await this.incrementResourceViews(id);
+      
+      return resource;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de la ressource:', error);
+      throw error;
+    }
   }
 
   /**
@@ -236,8 +255,8 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Liste des ressources d'information
    */
   async getInfoResourcesByCategory(category: string, limit: number = 20, offset: number = 0): Promise<InfoResource[]> {
-    return new Promise((resolve, reject) => {
-      db.all(
+    try {
+      const resources = await db.query<InfoResource>(
         `SELECT ir.*, 
           (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,
           (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count
@@ -245,26 +264,19 @@ export class InfoModel extends BaseModel<PageInfo> {
         WHERE ir.category = ?
         ORDER BY ir.publication_date DESC
         LIMIT ? OFFSET ?`,
-        [category, limit, offset],
-        async (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          try {
-            // Récupérer les tags pour chaque ressource
-            const resources = rows as InfoResource[];
-            for (const resource of resources) {
-              resource.tags = await this.getTagsForResource(resource.id);
-            }
-            resolve(resources);
-          } catch (error) {
-            reject(error);
-          }
-        }
+        [category, limit, offset]
       );
-    });
+
+      // Récupérer les tags pour chaque ressource
+      for (const resource of resources) {
+        resource.tags = await this.getTagsForResource(resource.id);
+      }
+      
+      return resources;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des ressources par catégorie:', error);
+      throw error;
+    }
   }
 
   /**
@@ -275,8 +287,8 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Liste des ressources d'information
    */
   async getInfoResourcesByTag(tag: string, limit: number = 20, offset: number = 0): Promise<InfoResource[]> {
-    return new Promise((resolve, reject) => {
-      db.all(
+    try {
+      const resources = await db.query<InfoResource>(
         `SELECT ir.*, 
           (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,
           (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count
@@ -286,26 +298,19 @@ export class InfoModel extends BaseModel<PageInfo> {
         WHERE t.name = ?
         ORDER BY ir.publication_date DESC
         LIMIT ? OFFSET ?`,
-        [tag, limit, offset],
-        async (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          try {
-            // Récupérer les tags pour chaque ressource
-            const resources = rows as InfoResource[];
-            for (const resource of resources) {
-              resource.tags = await this.getTagsForResource(resource.id);
-            }
-            resolve(resources);
-          } catch (error) {
-            reject(error);
-          }
-        }
+        [tag, limit, offset]
       );
-    });
+
+      // Récupérer les tags pour chaque ressource
+      for (const resource of resources) {
+        resource.tags = await this.getTagsForResource(resource.id);
+      }
+      
+      return resources;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des ressources par tag:', error);
+      throw error;
+    }
   }
 
   /**
@@ -314,68 +319,46 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Ressource créée
    */
   async createInfoResource(resource: Partial<InfoResource>, tags: string[] = []): Promise<InfoResource> {
-    return new Promise((resolve, reject) => {
-      db.serialize(() => {
-        db.run('BEGIN TRANSACTION');
+    try {
+      // Insérer la ressource
+      const result = await db.execute(
+        `INSERT INTO info_resources (
+          title, summary, content, category, author_id, 
+          publication_date, modification_date, reading_time, level, views, shares,
+          media_type, media_url, media_filename
+        ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?, ?, 0, 0, ?, ?, ?)`,
+        [
+          resource.title, 
+          resource.summary, 
+          resource.content, 
+          resource.category, 
+          resource.author_id,
+          resource.reading_time,
+          resource.level,
+          resource.media_type || null,
+          resource.media_url || null,
+          resource.media_filename || null
+        ]
+      );
 
-        db.run(
-          `INSERT INTO info_resources (
-            title, summary, content, category, author_id, 
-            publication_date, modification_date, reading_time, level, views, shares
-          ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?, ?, 0, 0)`,
-          [
-            resource.title, 
-            resource.summary, 
-            resource.content, 
-            resource.category, 
-            resource.author_id,
-            resource.reading_time,
-            resource.level
-          ],
-          async function (err) {
-            if (err) {
-              db.run('ROLLBACK');
-              reject(err);
-              return;
-            }
+      const resourceId = result.lastInsertId;
 
-            const resourceId = this.lastID;
+      // Associer les tags
+      if (tags.length > 0) {
+        await this.associateTagsToResource(resourceId, tags);
+      }
 
-            try {
-              // Associer les tags
-              if (tags.length > 0) {
-                await this.associateTagsToResource(resourceId, tags);
-              }
+      // Récupérer la ressource complète (sans incrémenter les vues)
+      const newResource = await this.getInfoResourceByIdInternal(resourceId);
+      if (!newResource) {
+        throw new Error("La ressource a été créée mais n'a pas pu être récupérée");
+      }
 
-              // Récupérer la ressource créée
-              db.get(
-                `SELECT * FROM info_resources WHERE id = ?`,
-                [resourceId],
-                async (err, row) => {
-                  if (err) {
-                    db.run('ROLLBACK');
-                    reject(err);
-                    return;
-                  }
-
-                  db.run('COMMIT');
-                  
-                  const newResource = row as InfoResource;
-                  newResource.tags = tags;
-                  newResource.likes_count = 0;
-                  newResource.comments_count = 0;
-                  
-                  resolve(newResource);
-                }
-              );
-            } catch (error) {
-              db.run('ROLLBACK');
-              reject(error);
-            }
-          }.bind(this)
-        );
-      });
-    });
+      return newResource;
+    } catch (error) {
+      console.error('Erreur lors de la création de la ressource:', error);
+      throw error;
+    }
   }
 
   /**
@@ -386,69 +369,52 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Ressource mise à jour
    */
   async updateInfoResource(id: number, resource: Partial<InfoResource>, tags: string[] = []): Promise<InfoResource> {
-    return new Promise((resolve, reject) => {
-      db.serialize(() => {
-        db.run('BEGIN TRANSACTION');
+    try {
+      // Mettre à jour la ressource
+      await db.execute(
+        `UPDATE info_resources
+         SET title = ?, summary = ?, content = ?, category = ?,
+             modification_date = datetime('now'), reading_time = ?, level = ?,
+             media_type = ?, media_url = ?, media_filename = ?
+         WHERE id = ?`,
+        [
+          resource.title, 
+          resource.summary, 
+          resource.content, 
+          resource.category,
+          resource.reading_time,
+          resource.level,
+          resource.media_type || null,
+          resource.media_url || null,
+          resource.media_filename || null,
+          id
+        ]
+      );
 
-        db.run(
-          `UPDATE info_resources
-           SET title = ?, summary = ?, content = ?, category = ?,
-               modification_date = datetime('now'), reading_time = ?, level = ?
-           WHERE id = ?`,
-          [
-            resource.title, 
-            resource.summary, 
-            resource.content, 
-            resource.category,
-            resource.reading_time,
-            resource.level,
-            id
-          ],
-          async (err) => {
-            if (err) {
-              db.run('ROLLBACK');
-              reject(err);
-              return;
-            }
-
-            try {
-              // Mettre à jour les tags si spécifiés
-              if (tags.length > 0) {
-                // Supprimer les associations existantes
-                await new Promise<void>((resolve, reject) => {
-                  db.run(
-                    `DELETE FROM info_resources_tags WHERE info_resource_id = ?`,
-                    [id],
-                    (err) => {
-                      if (err) reject(err);
-                      else resolve();
-                    }
-                  );
-                });
-
-                // Ajouter les nouvelles associations
-                await this.associateTagsToResource(id, tags);
-              }
-
-              // Récupérer la ressource mise à jour
-              const updatedResource = await this.getInfoResourceById(id);
-              
-              if (!updatedResource) {
-                db.run('ROLLBACK');
-                reject(new Error("Ressource non trouvée après mise à jour"));
-                return;
-              }
-
-              db.run('COMMIT');
-              resolve(updatedResource);
-            } catch (error) {
-              db.run('ROLLBACK');
-              reject(error);
-            }
-          }
+      // Mettre à jour les tags si spécifiés
+      if (tags.length > 0) {
+        // Supprimer les associations existantes
+        await db.execute(
+          `DELETE FROM info_resources_tags WHERE info_resource_id = ?`,
+          [id]
         );
-      });
-    });
+
+        // Ajouter les nouvelles associations
+        await this.associateTagsToResource(id, tags);
+      }
+
+      // Récupérer la ressource mise à jour (sans incrémenter les vues)
+      const updatedResource = await this.getInfoResourceByIdInternal(id);
+      
+      if (!updatedResource) {
+        throw new Error("Ressource non trouvée après mise à jour");
+      }
+
+      return updatedResource;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la ressource:', error);
+      throw error;
+    }
   }
 
   /**
@@ -457,44 +423,75 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Succès de l'opération
    */
   async deleteInfoResource(id: number): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      db.run(
+    try {
+      const result = await db.execute(
         `DELETE FROM info_resources WHERE id = ?`,
-        [id],
-        function (err) {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(this.changes > 0);
-        }
+        [id]
       );
-    });
+      
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la ressource:', error);
+      throw error;
+    }
   }
 
   /**
-   * Récupère les commentaires d'une ressource d'information
+   * Récupère les commentaires d'une ressource d'information avec leurs réponses
    * @param resourceId ID de la ressource
-   * @returns Liste des commentaires
+   * @returns Liste des commentaires avec leurs réponses
    */
   async getCommentsForInfoResource(resourceId: number): Promise<InfoResourceComment[]> {
-    return new Promise((resolve, reject) => {
-      db.all(
+    try {
+      // Récupérer tous les commentaires pour cette ressource
+      const allComments = await db.query<InfoResourceComment>(
         `SELECT c.*, u.firstname as user_firstname, u.lastname as user_lastname
          FROM info_resources_comments c
          JOIN users u ON c.user_id = u.id
          WHERE c.info_resource_id = ?
-         ORDER BY c.comment_date DESC`,
-        [resourceId],
-        (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(rows as InfoResourceComment[]);
-        }
+         ORDER BY c.comment_date ASC`,
+        [resourceId]
       );
-    });
+      
+      // Organiser les commentaires en hiérarchie (commentaires parents avec leurs réponses)
+      const commentsMap = new Map<number, InfoResourceComment>();
+      const rootComments: InfoResourceComment[] = [];
+      
+      // Initialiser tous les commentaires dans la map
+      allComments.forEach(comment => {
+        comment.replies = [];
+        commentsMap.set(comment.id, comment);
+      });
+      
+      // Organiser la hiérarchie
+      allComments.forEach(comment => {
+        if (comment.parent_id) {
+          // C'est une réponse, l'ajouter au parent
+          const parent = commentsMap.get(comment.parent_id);
+          if (parent) {
+            parent.replies!.push(comment);
+          }
+        } else {
+          // C'est un commentaire racine
+          rootComments.push(comment);
+        }
+      });
+      
+      // Trier les commentaires racine par date décroissante (plus récents d'abord)
+      rootComments.sort((a, b) => new Date(b.comment_date).getTime() - new Date(a.comment_date).getTime());
+      
+      // Trier les réponses par date croissante (plus anciennes d'abord)
+      rootComments.forEach(comment => {
+        if (comment.replies) {
+          comment.replies.sort((a, b) => new Date(a.comment_date).getTime() - new Date(b.comment_date).getTime());
+        }
+      });
+      
+      return rootComments;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des commentaires:', error);
+      throw error;
+    }
   }
 
   /**
@@ -505,62 +502,189 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Commentaire créé
    */
   async addCommentToInfoResource(resourceId: number, userId: number, message: string): Promise<InfoResourceComment> {
-    return new Promise((resolve, reject) => {
-      db.run(
+    try {
+      // Insérer le commentaire
+      const result = await db.execute(
         `INSERT INTO info_resources_comments (info_resource_id, user_id, message, comment_date)
          VALUES (?, ?, ?, datetime('now'))`,
-        [resourceId, userId, message],
-        function (err) {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          // Récupérer le commentaire créé avec les informations de l'utilisateur
-          db.get(
-            `SELECT c.*, u.firstname as user_firstname, u.lastname as user_lastname
-             FROM info_resources_comments c
-             JOIN users u ON c.user_id = u.id
-             WHERE c.id = ?`,
-            [this.lastID],
-            (err, row) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(row as InfoResourceComment);
-            }
-          );
-        }
+        [resourceId, userId, message]
       );
-    });
+
+      // Récupérer le commentaire créé avec les informations de l'utilisateur
+      const comment = await db.queryOne<InfoResourceComment>(
+        `SELECT c.*, u.firstname as user_firstname, u.lastname as user_lastname
+         FROM info_resources_comments c
+         JOIN users u ON c.user_id = u.id
+         WHERE c.id = ?`,
+        [result.lastInsertId]
+      );
+
+      if (!comment) {
+        throw new Error("Le commentaire a été créé mais n'a pas pu être récupéré");
+      }
+
+      return comment;
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du commentaire:', error);
+      throw error;
+    }
   }
 
   /**
-   * Supprime un commentaire d'une ressource d'information
+   * Ajoute une réponse à un commentaire existant
+   * @param resourceId ID de la ressource
+   * @param userId ID de l'utilisateur
+   * @param message Message de la réponse
+   * @param parentId ID du commentaire parent
+   * @returns Réponse créée
+   */
+  async addReplyToComment(resourceId: number, userId: number, message: string, parentId: number): Promise<InfoResourceComment> {
+    try {
+      // Vérifier que le commentaire parent existe et appartient à la même ressource
+      const parentComment = await db.queryOne<InfoResourceComment>(
+        `SELECT * FROM info_resources_comments 
+         WHERE id = ? AND info_resource_id = ?`,
+        [parentId, resourceId]
+      );
+
+      if (!parentComment) {
+        throw new Error("Le commentaire parent n'existe pas ou n'appartient pas à cette ressource");
+      }
+
+      // Insérer la réponse
+      const result = await db.execute(
+        `INSERT INTO info_resources_comments (info_resource_id, user_id, message, parent_id, comment_date)
+         VALUES (?, ?, ?, ?, datetime('now'))`,
+        [resourceId, userId, message, parentId]
+      );
+
+      // Récupérer la réponse créée avec les informations de l'utilisateur
+      const reply = await db.queryOne<InfoResourceComment>(
+        `SELECT c.*, u.firstname as user_firstname, u.lastname as user_lastname
+         FROM info_resources_comments c
+         JOIN users u ON c.user_id = u.id
+         WHERE c.id = ?`,
+        [result.lastInsertId]
+      );
+
+      if (!reply) {
+        throw new Error("La réponse a été créée mais n'a pas pu être récupérée");
+      }
+
+      return reply;
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout de la réponse:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Supprime un commentaire d'une ressource d'information ainsi que toutes ses réponses
    * @param commentId ID du commentaire
    * @param userId ID de l'utilisateur (pour vérification)
    * @param isAdmin Si l'utilisateur est administrateur
    * @returns Succès de l'opération
    */
   async deleteInfoResourceComment(commentId: number, userId: number, isAdmin: boolean): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      // Si l'utilisateur est admin, il peut supprimer n'importe quel commentaire
-      // Sinon, il ne peut supprimer que ses propres commentaires
-      const query = isAdmin
-        ? `DELETE FROM info_resources_comments WHERE id = ?`
-        : `DELETE FROM info_resources_comments WHERE id = ? AND user_id = ?`;
-      
-      const params = isAdmin ? [commentId] : [commentId, userId];
-      
-      db.run(query, params, function (err) {
-        if (err) {
-          reject(err);
-          return;
+    try {
+      // Vérifier d'abord si l'utilisateur a le droit de supprimer ce commentaire
+      if (!isAdmin) {
+        const comment = await db.queryOne<{user_id: number}>(
+          `SELECT user_id FROM info_resources_comments WHERE id = ?`,
+          [commentId]
+        );
+        
+        if (!comment || comment.user_id !== userId) {
+          return false; // L'utilisateur n'a pas le droit de supprimer ce commentaire
         }
-        resolve(this.changes > 0);
-      });
-    });
+      }
+
+      // Commencer une transaction pour assurer la cohérence des données
+      await db.execute('BEGIN TRANSACTION');
+
+      try {
+        // 1. Supprimer d'abord toutes les réponses à ce commentaire
+        // (toutes les réponses sont supprimées car elles n'ont plus de sens sans le commentaire parent)
+        await db.execute(
+          `DELETE FROM info_resources_comments WHERE parent_id = ?`,
+          [commentId]
+        );
+
+        // 2. Supprimer le commentaire parent
+        const deleteCommentQuery = isAdmin
+          ? `DELETE FROM info_resources_comments WHERE id = ?`
+          : `DELETE FROM info_resources_comments WHERE id = ? AND user_id = ?`;
+        
+        const deleteCommentParams = isAdmin ? [commentId] : [commentId, userId];
+        const result = await db.execute(deleteCommentQuery, deleteCommentParams);
+
+        // Si le commentaire a été supprimé avec succès, valider la transaction
+        if (result.changes > 0) {
+          await db.execute('COMMIT');
+          return true;
+        } else {
+          await db.execute('ROLLBACK');
+          return false;
+        }
+      } catch (transactionError) {
+        // En cas d'erreur dans la transaction, annuler tous les changements
+        await db.execute('ROLLBACK');
+        throw transactionError;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression du commentaire:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Modifie un commentaire d'une ressource d'information
+   * @param commentId ID du commentaire
+   * @param userId ID de l'utilisateur (pour vérification)
+   * @param newMessage Nouveau message du commentaire
+   * @param isAdmin Si l'utilisateur est administrateur
+   * @returns Commentaire modifié ou null si échec
+   */
+  async updateInfoResourceComment(commentId: number, userId: number, newMessage: string, isAdmin: boolean): Promise<InfoResourceComment | null> {
+    try {
+      // Vérifier d'abord si l'utilisateur a le droit de modifier ce commentaire
+      if (!isAdmin) {
+        const comment = await db.queryOne<{user_id: number, info_resource_id: number}>(
+          `SELECT user_id, info_resource_id FROM info_resources_comments WHERE id = ?`,
+          [commentId]
+        );
+        
+        if (!comment || comment.user_id !== userId) {
+          return null; // L'utilisateur n'a pas le droit de modifier ce commentaire
+        }
+      }
+
+      // Mettre à jour le commentaire
+      const updateQuery = isAdmin
+        ? `UPDATE info_resources_comments SET message = ?, comment_date = datetime('now') WHERE id = ?`
+        : `UPDATE info_resources_comments SET message = ?, comment_date = datetime('now') WHERE id = ? AND user_id = ?`;
+      
+      const updateParams = isAdmin ? [newMessage, commentId] : [newMessage, commentId, userId];
+      const result = await db.execute(updateQuery, updateParams);
+
+      if (result.changes === 0) {
+        return null; // Aucune modification effectuée
+      }
+
+      // Récupérer le commentaire modifié avec les informations de l'utilisateur
+      const updatedComment = await db.queryOne<InfoResourceComment>(
+        `SELECT c.*, u.firstname as user_firstname, u.lastname as user_lastname
+         FROM info_resources_comments c
+         JOIN users u ON c.user_id = u.id
+         WHERE c.id = ?`,
+        [commentId]
+      );
+
+      return updatedComment || null;
+    } catch (error) {
+      console.error('Erreur lors de la modification du commentaire:', error);
+      throw error;
+    }
   }
 
   /**
@@ -570,20 +694,18 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns True si l'utilisateur a liké la ressource
    */
   async hasUserLikedInfoResource(resourceId: number, userId: number): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      db.get(
+    try {
+      const row = await db.queryOne(
         `SELECT 1 FROM info_resources_likes
          WHERE info_resource_id = ? AND user_id = ?`,
-        [resourceId, userId],
-        (err, row) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(!!row);
-        }
+        [resourceId, userId]
       );
-    });
+      
+      return !!row;
+    } catch (error) {
+      console.error('Erreur lors de la vérification du like:', error);
+      throw error;
+    }
   }
 
   /**
@@ -593,44 +715,31 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Nouvel état du like (true = liké, false = non liké)
    */
   async toggleLikeInfoResource(resourceId: number, userId: number): Promise<boolean> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Vérifier si l'utilisateur a déjà liké la ressource
-        const hasLiked = await this.hasUserLikedInfoResource(resourceId, userId);
+    try {
+      // Vérifier si l'utilisateur a déjà liké la ressource
+      const hasLiked = await this.hasUserLikedInfoResource(resourceId, userId);
 
-        if (hasLiked) {
-          // Retirer le like
-          db.run(
-            `DELETE FROM info_resources_likes
-             WHERE info_resource_id = ? AND user_id = ?`,
-            [resourceId, userId],
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(false);
-            }
-          );
-        } else {
-          // Ajouter le like
-          db.run(
-            `INSERT INTO info_resources_likes (info_resource_id, user_id, like_date)
-             VALUES (?, ?, datetime('now'))`,
-            [resourceId, userId],
-            (err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(true);
-            }
-          );
-        }
-      } catch (error) {
-        reject(error);
+      if (hasLiked) {
+        // Retirer le like
+        await db.execute(
+          `DELETE FROM info_resources_likes
+           WHERE info_resource_id = ? AND user_id = ?`,
+          [resourceId, userId]
+        );
+        return false;
+      } else {
+        // Ajouter le like
+        await db.execute(
+          `INSERT INTO info_resources_likes (info_resource_id, user_id, like_date)
+           VALUES (?, ?, datetime('now'))`,
+          [resourceId, userId]
+        );
+        return true;
       }
-    });
+    } catch (error) {
+      console.error('Erreur lors du toggle du like:', error);
+      throw error;
+    }
   }
 
   /**
@@ -639,33 +748,26 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Nouveau nombre de partages
    */
   async incrementInfoResourceShares(resourceId: number): Promise<number> {
-    return new Promise((resolve, reject) => {
-      db.run(
+    try {
+      // Incrémenter le compteur
+      await db.execute(
         `UPDATE info_resources
          SET shares = shares + 1
          WHERE id = ?`,
-        [resourceId],
-        (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          // Récupérer le nouveau nombre de partages
-          db.get(
-            `SELECT shares FROM info_resources WHERE id = ?`,
-            [resourceId],
-            (err, row: any) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(row ? row.shares : 0);
-            }
-          );
-        }
+        [resourceId]
       );
-    });
+
+      // Récupérer le nouveau nombre de partages
+      const result = await db.queryOne<{shares: number}>(
+        `SELECT shares FROM info_resources WHERE id = ?`,
+        [resourceId]
+      );
+      
+      return result ? result.shares : 0;
+    } catch (error) {
+      console.error('Erreur lors de l\'incrémentation des partages:', error);
+      throw error;
+    }
   }
 
   /**
@@ -674,33 +776,26 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Nouveau nombre de vues
    */
   private async incrementResourceViews(resourceId: number): Promise<number> {
-    return new Promise((resolve, reject) => {
-      db.run(
+    try {
+      // Incrémenter le compteur
+      await db.execute(
         `UPDATE info_resources
          SET views = views + 1
          WHERE id = ?`,
-        [resourceId],
-        (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          // Récupérer le nouveau nombre de vues
-          db.get(
-            `SELECT views FROM info_resources WHERE id = ?`,
-            [resourceId],
-            (err, row: any) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(row ? row.views : 0);
-            }
-          );
-        }
+        [resourceId]
       );
-    });
+
+      // Récupérer le nouveau nombre de vues
+      const result = await db.queryOne<{views: number}>(
+        `SELECT views FROM info_resources WHERE id = ?`,
+        [resourceId]
+      );
+      
+      return result ? result.views : 0;
+    } catch (error) {
+      console.error('Erreur lors de l\'incrémentation des vues:', error);
+      throw error;
+    }
   }
 
   /**
@@ -709,22 +804,20 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Liste des tags
    */
   private async getTagsForResource(resourceId: number): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      db.all(
+    try {
+      const rows = await db.query<{name: string}>(
         `SELECT t.name
          FROM tags t
          JOIN info_resources_tags irt ON t.id = irt.tag_id
          WHERE irt.info_resource_id = ?`,
-        [resourceId],
-        (err, rows: any[]) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(rows.map(row => row.name));
-        }
+        [resourceId]
       );
-    });
+      
+      return rows.map(row => row.name);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tags:', error);
+      throw error;
+    }
   }
 
   /**
@@ -732,19 +825,17 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Liste des tags
    */
   async getAllTags(): Promise<{id: number, name: string}[]> {
-    return new Promise((resolve, reject) => {
-      db.all(
+    try {
+      const tags = await db.query<{id: number, name: string}>(
         `SELECT id, name FROM tags ORDER BY name`,
-        [],
-        (err, rows) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(rows as {id: number, name: string}[]);
-        }
+        []
       );
-    });
+      
+      return tags;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tags:', error);
+      throw error;
+    }
   }
 
   /**
@@ -753,58 +844,68 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @param tags Liste des tags
    */
   private async associateTagsToResource(resourceId: number, tags: string[]): Promise<void> {
-    for (const tag of tags) {
-      // Vérifier si le tag existe
-      const existingTag = await new Promise<{id: number} | null>((resolve, reject) => {
-        db.get(
+    try {
+      for (const tag of tags) {
+        // Vérifier si le tag existe
+        const existingTag = await db.queryOne<{id: number}>(
           `SELECT id FROM tags WHERE name = ?`,
-          [tag],
-          (err, row) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(row as {id: number} | null);
-          }
+          [tag]
         );
-      });
 
-      let tagId: number;
+        let tagId: number;
 
-      if (existingTag) {
-        tagId = existingTag.id;
-      } else {
-        // Créer le tag s'il n'existe pas
-        tagId = await new Promise<number>((resolve, reject) => {
-          db.run(
+        if (existingTag) {
+          tagId = existingTag.id;
+        } else {
+          // Créer le tag s'il n'existe pas
+          const result = await db.execute(
             `INSERT INTO tags (name) VALUES (?)`,
-            [tag],
-            function (err) {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve(this.lastID);
-            }
+            [tag]
           );
-        });
-      }
+          tagId = result.lastInsertId;
+        }
 
-      // Associer le tag à la ressource
-      await new Promise<void>((resolve, reject) => {
-        db.run(
+        // Associer le tag à la ressource
+        await db.execute(
           `INSERT OR IGNORE INTO info_resources_tags (info_resource_id, tag_id)
            VALUES (?, ?)`,
-          [resourceId, tagId],
-          (err) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve();
-          }
+          [resourceId, tagId]
         );
-      });
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'association des tags:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Récupère les ressources d'information likées par un utilisateur
+   * @param userId ID de l'utilisateur
+   * @returns Liste des ressources likées par l'utilisateur
+   */
+  async getUserLikedInfoResources(userId: number): Promise<InfoResource[]> {
+    try {
+      const resources = await db.query<InfoResource>(
+        `SELECT ir.*, 
+          (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,
+          (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count,
+          irl.like_date
+        FROM info_resources ir
+        INNER JOIN info_resources_likes irl ON ir.id = irl.info_resource_id
+        WHERE irl.user_id = ?
+        ORDER BY irl.like_date DESC`,
+        [userId]
+      );
+
+      // Récupérer les tags pour chaque ressource
+      for (const resource of resources) {
+        resource.tags = await this.getTagsForResource(resource.id);
+      }
+      
+      return resources;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des ressources likées:', error);
+      throw error;
     }
   }
 
@@ -815,7 +916,7 @@ export class InfoModel extends BaseModel<PageInfo> {
    * @returns Liste des ressources d'information recommandées
    */
   async getRecommendationsByStressLevel(stressLevel: string, limit: number): Promise<InfoResource[]> {
-    return new Promise(async (resolve, reject) => {
+    try {
       // Définir des mots-clés ou catégories cibles par niveau de stress
       let targetCategories: string[] = [];
       let targetTags: string[] = [];
@@ -843,59 +944,49 @@ export class InfoModel extends BaseModel<PageInfo> {
           difficultyLevels = ['débutant', 'tous niveaux'];
       }
 
-      // Construire la requête SQL pour chercher par catégorie OU par tag.
-      // On utilise LIKE pour les tags car ils sont stockés en JSON array string `["tag1","tag2"]`
-      // ou via une table de jointure `info_resources_tags` si elle existe et est peuplée.
-      // Pour la simplicité ici, je vais supposer que `tags` est une colonne texte et on cherche dedans.
-      // Si `tags` est bien géré par la table de jointure `info_resources_tags`, la requête serait plus complexe.
-      // Le code existant `getTagsForResource` et `associateTagsToResource` suggère une table de jointure.
-
-      // Priorité: Catégorie, puis tags si pas assez de résultats par catégorie.
-      // On va essayer de construire une requête qui pondère ou combine ces critères.
-      // Pour l'instant, une approche simple: chercher par catégorie OU tag, puis trier/limiter.
-      
-      // Créer des clauses WHERE pour chaque tag et catégorie
+      // Créer des clauses WHERE pour chaque catégorie
       const categoryClauses = targetCategories.map(cat => `ir.category LIKE '%${cat.replace(/\'/g, "''")}%'`).join(' OR ');
-      // Pour les tags, en supposant qu'ils sont dans une table de jointure `tags` et `info_resources_tags`
-      const tagPlaceholders = targetTags.map(() => '?').join(',');
       
-      // Cette requête tente de trouver des articles dont la catégorie est pertinente OU qui ont des tags pertinents.
-      // Elle utilise une sous-requête pour les tags.
+      // Construire la requête SQL
       const query = `
-        SELECT ir.*,\n          (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,\n          (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count\n        FROM info_resources ir\n        WHERE \n          (${categoryClauses})\n          OR ir.id IN (\n            SELECT DISTINCT irt.info_resource_id \n            FROM info_resources_tags irt \n            JOIN tags t ON irt.tag_id = t.id \n            WHERE t.name IN (${tagPlaceholders})\n          )\n          ${difficultyLevels.length > 0 ? `OR ir.level IN (${difficultyLevels.map(l => `'${l}'`).join(',')})` : ''}
-        ORDER BY RANDOM() -- Pour varier les suggestions\n        LIMIT ?;\n      `;
+        SELECT ir.*,
+          (SELECT COUNT(*) FROM info_resources_likes WHERE info_resource_id = ir.id) as likes_count,
+          (SELECT COUNT(*) FROM info_resources_comments WHERE info_resource_id = ir.id) as comments_count
+        FROM info_resources ir
+        WHERE 
+          (${categoryClauses})
+          OR ir.id IN (
+            SELECT DISTINCT irt.info_resource_id 
+            FROM info_resources_tags irt 
+            JOIN tags t ON irt.tag_id = t.id 
+            WHERE t.name IN (${targetTags.map(() => '?').join(',')})
+          )
+          ${difficultyLevels.length > 0 ? `OR ir.level IN (${difficultyLevels.map(l => `'${l}'`).join(',')})` : ''}
+        ORDER BY RANDOM()
+        LIMIT ?
+      `;
 
       const params = [...targetTags, limit];
 
-      db.all(query, params, async (err, rows: InfoResource[]) => {
-        if (err) {
-          console.error("SQL Error in getRecommendationsByStressLevel (InfoModel):", err);
-          // Fallback: retourner quelques articles génériques si la requête échoue
-          try {
-            const fallbackArticles = await this.getAllInfoResources(limit, 0); // Prendre les plus récents
-            resolve(fallbackArticles);
-          } catch (fallbackError) {
-            reject(fallbackError);
-          }
-          return;
-        }
+      // Exécuter la requête
+      const resources = await db.query<InfoResource>(query, params);
 
-        if (rows && rows.length > 0) {
-          // Attacher les tags à chaque ressource comme le font les autres méthodes
-          for (const resource of rows) {
-            resource.tags = await this.getTagsForResource(resource.id);
-          }
-          resolve(rows);
-        } else {
-          // Si rien ne correspond, prendre les plus récents/populaires comme fallback
-          try {
-            const fallbackArticles = await this.getAllInfoResources(limit, 0);
-            resolve(fallbackArticles);
-          } catch (fallbackError) {
-            reject(fallbackError);
-          }
-        }
-      });
-    });
+      // Attacher les tags à chaque ressource
+      for (const resource of resources) {
+        resource.tags = await this.getTagsForResource(resource.id);
+      }
+      
+      return resources;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des recommandations:', error);
+      
+      // Fallback: retourner quelques articles génériques si la requête échoue
+      try {
+        return await this.getAllInfoResources(limit, 0);
+      } catch (fallbackError) {
+        console.error('Erreur lors de la récupération des ressources de secours:', fallbackError);
+        throw error; // Remonter l'erreur originale
+      }
+    }
   }
 } 

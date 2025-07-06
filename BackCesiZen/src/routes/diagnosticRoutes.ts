@@ -35,6 +35,15 @@ export async function diagnosticRoutes(req: Request): Promise<Response> {
     return diagnosticController.getUserHistory(req);
   }
 
+  // DELETE /api/diagnostic/history/{id} - Supprimer un diagnostic spécifique de l'utilisateur
+  if (path.startsWith("/api/diagnostic/history/") && method === "DELETE") {
+    // Vérifier que l'utilisateur est connecté
+    const authResponse = await authMiddleware(req);
+    if (authResponse) return authResponse;
+    
+    return diagnosticController.deleteDiagnostic(req);
+  }
+
   // POST /api/diagnostic/configure - Modifier les questions (admin uniquement)
   if (path === "/api/diagnostic/configure" && method === "POST") {
     // Vérifier que l'utilisateur est connecté et est admin

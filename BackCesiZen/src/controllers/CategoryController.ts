@@ -1,10 +1,15 @@
 import { CategoryModel } from '../models/Category';
 import { verifyToken } from '../utils/jwt';
+import { parse } from 'cookie';
 
 export class CategoryController {
   static async create(req: Request) {
     try {
-      const token = req.headers.get('Authorization')?.split(' ')[1];
+      // Récupérer le token depuis les cookies
+      const cookies = req.headers.get('Cookie') || '';
+      const parsedCookies = parse(cookies);
+      const token = parsedCookies.authToken;
+      
       if (!token) {
         return new Response(JSON.stringify({ error: 'Non autorisé' }), {
           status: 401,
@@ -77,7 +82,11 @@ export class CategoryController {
 
   static async update(req: Request) {
     try {
-      const token = req.headers.get('Authorization')?.split(' ')[1];
+      // Récupérer le token depuis les cookies
+      const cookies = req.headers.get('Cookie') || '';
+      const parsedCookies = parse(cookies);
+      const token = parsedCookies.authToken;
+      
       if (!token) {
         return new Response(JSON.stringify({ error: 'Non autorisé' }), {
           status: 401,
@@ -119,7 +128,11 @@ export class CategoryController {
 
   static async delete(req: Request) {
     try {
-      const token = req.headers.get('Authorization')?.split(' ')[1];
+      // Récupérer le token depuis les cookies
+      const cookies = req.headers.get('Cookie') || '';
+      const parsedCookies = parse(cookies);
+      const token = parsedCookies.authToken;
+      
       if (!token) {
         return new Response(JSON.stringify({ error: 'Non autorisé' }), {
           status: 401,
