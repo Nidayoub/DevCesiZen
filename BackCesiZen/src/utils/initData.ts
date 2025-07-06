@@ -3,9 +3,11 @@ import { SessionModel } from "../models/sessionModel";
 import { DiagnosticEventModel } from "../models/diagnosticModel";
 import { InfoModel } from "../models/infoModel";
 import { BreathingExerciseModel } from "../models/breathingModel";
+import { CategoryModel } from "../models/Category";
 import { db } from "../data/database";
 import bcrypt from "bcryptjs";
 import { initInfoResources } from "./initInfoResources";
+import { addMediaColumns } from "./addMediaColumns";
 
 /**
  * Initialise les données du système au démarrage
@@ -18,6 +20,12 @@ async function initializeData() {
   const cleanedSessions = await sessionModel.cleanExpiredSessions();
   console.log(`${cleanedSessions} sessions expirées nettoyées`);
 
+  // Ajouter les colonnes média si nécessaire
+  await addMediaColumns();
+  
+  // Initialiser les catégories par défaut
+  await initDefaultCategories();
+  
   // Initialiser les événements de stress dans SQLite
   await initHolmesRaheEvents();
   
@@ -160,6 +168,36 @@ La méditation de pleine conscience est une pratique qui consiste à porter son 
   }
 
   console.log("Initialisation des données terminée");
+}
+
+/**
+ * Initialise les catégories par défaut pour les ressources
+ */
+async function initDefaultCategories() {
+  // Vérifier si des catégories existent déjà
+  const categoryCount = await db.queryOne<{count: number}>('SELECT COUNT(*) as count FROM categories');
+  
+  if (!categoryCount || categoryCount.count === 0) {
+    console.log('🌱 Initialisation des catégories par défaut...');
+    
+    const defaultCategories = [
+      { name: 'generale', description: 'Ressources générales sur le bien-être' },
+      { name: 'stress', description: 'Gestion du stress et techniques de relaxation' },
+      { name: 'sommeil', description: 'Amélioration de la qualité du sommeil' },
+      { name: 'alimentation', description: 'Nutrition et alimentation équilibrée' },
+      { name: 'exercice', description: 'Exercice physique et activité sportive' },
+      { name: 'meditation', description: 'Méditation et pleine conscience' },
+      { name: 'respiration', description: 'Techniques de respiration et relaxation' },
+      { name: 'productivite', description: 'Productivité et gestion du temps' },
+      { name: 'motivation', description: 'Motivation et développement personnel' },
+    ];
+    
+    for (const category of defaultCategories) {
+      await CategoryModel.create(category);
+    }
+    
+    console.log('✅ Catégories par défaut créées avec succès');
+  }
 }
 
 /**

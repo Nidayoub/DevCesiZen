@@ -1,6 +1,8 @@
 import { AuthController } from '../controllers/AuthController';
 import { ResourceController } from '../controllers/ResourceController';
 import { CategoryController } from '../controllers/CategoryController';
+import { DiagnosticCategoryController } from '../controllers/DiagnosticCategoryController';
+import { MediaController } from '../controllers/MediaController';
 import { userRoutes } from './userRoutes';
 import { diagnosticRoutes } from './diagnosticRoutes';
 import { infoRoutes } from './infoRoutes';
@@ -137,6 +139,31 @@ export async function router(req: Request): Promise<Response> {
       return CategoryController.delete(req);
     }
 
+    // Routes des catégories de diagnostic
+    if (path === '/api/diagnostic-categories' && method === 'GET') {
+      return DiagnosticCategoryController.findAll(req);
+    }
+
+    if (path === '/api/diagnostic-categories/with-count' && method === 'GET') {
+      return DiagnosticCategoryController.findAllWithCount(req);
+    }
+
+    if (path === '/api/diagnostic-categories' && method === 'POST') {
+      return DiagnosticCategoryController.create(req);
+    }
+
+    if (path.match(/^\/api\/diagnostic-categories\/\d+$/) && method === 'GET') {
+      return DiagnosticCategoryController.findById(req);
+    }
+
+    if (path.match(/^\/api\/diagnostic-categories\/\d+$/) && method === 'PUT') {
+      return DiagnosticCategoryController.update(req);
+    }
+
+    if (path.match(/^\/api\/diagnostic-categories\/\d+$/) && method === 'DELETE') {
+      return DiagnosticCategoryController.delete(req);
+    }
+
     // Routes de diagnostic
     if (path.startsWith('/api/diagnostic')) {
       return diagnosticRoutes(req);
@@ -175,6 +202,16 @@ export async function router(req: Request): Promise<Response> {
     // Routes de recommandations (AJOUT)
     if (path.startsWith('/api/recommendations')) {
       return recommendationRoutes(req);
+    }
+
+    // Routes pour les médias
+    if (path === '/api/media/upload' && method === 'POST') {
+      return MediaController.uploadMedia(req);
+    }
+
+    // Service des fichiers statiques
+    if (path.startsWith('/uploads/')) {
+      return MediaController.serveMedia(req);
     }
 
     // Route par défaut

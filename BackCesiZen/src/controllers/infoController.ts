@@ -279,6 +279,7 @@ export class InfoController {
    */
   async getInfoResourceById(req: Request, id: number): Promise<Response> {
     try {
+      // Récupérer la ressource ET incrémenter les vues (consultation publique)
       const resource = await this.infoModel.getInfoResourceById(id);
       
       if (!resource) {
@@ -441,8 +442,8 @@ export class InfoController {
    */
   async updateInfoResource(req: Request, id: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const existingResource = await this.infoModel.getInfoResourceById(id);
+      // Vérifier que la ressource existe (sans incrémenter les vues)
+      const existingResource = await this.infoModel.getInfoResourceByIdInternal(id);
       
       if (!existingResource) {
         return new Response(JSON.stringify({ 
@@ -503,14 +504,155 @@ export class InfoController {
    */
   async deleteInfoResource(req: Request, id: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(id);
+      // Vérifier que la ressource existe (sans incrémenter les vues - opération admin)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(id);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
           error: "Ressource non trouvée"
         }), {
           status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      // Supprimer la ressource
+      const success = await this.infoModel.deleteInfoResource(id);
+      
+      if (!success) {
+        return new Response(JSON.stringify({ 
+          error: "Impossible de supprimer la ressource"
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      return new Response(JSON.stringify({ 
+        message: "Ressource supprimée avec succès"
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+      
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la ressource:", error);
+      return new Response(JSON.stringify({ 
+        error: "Erreur lors de la suppression de la ressource"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  /**
+   * Modifie une ressource d'information (par son auteur uniquement)
+   * @param req Requête
+   * @param id ID de la ressource
+   * @returns Réponse
+   */
+  async updateUserOwnInfoResource(req: Request, id: number): Promise<Response> {
+    try {
+      // Vérifier que la ressource existe (sans incrémenter les vues - opération de modification)
+      const existingResource = await this.infoModel.getInfoResourceByIdInternal(id);
+      
+      if (!existingResource) {
+        return new Response(JSON.stringify({ 
+          error: "Ressource non trouvée"
+        }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Récupérer l'ID de l'utilisateur connecté
+      const userId = (req as any).userId;
+
+      // Vérifier que l'utilisateur est l'auteur de la ressource
+      if (existingResource.author_id !== userId) {
+        return new Response(JSON.stringify({ 
+          error: "Vous ne pouvez modifier que vos propres ressources"
+        }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      const body = await req.json();
+      const { title, summary, content, category, tags, reading_time, level, media_type, media_url, media_filename } = body;
+      
+      // Vérifier que les champs nécessaires sont présents
+      if (!title || !summary || !content || !category) {
+        return new Response(JSON.stringify({ 
+          error: "Titre, résumé, contenu et catégorie sont requis"
+        }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      // Mettre à jour la ressource
+      const resource = await this.infoModel.updateInfoResource(id, {
+        title,
+        summary,
+        content,
+        category,
+        reading_time,
+        level,
+        media_type,
+        media_url,
+        media_filename
+      }, tags || []);
+      
+      return new Response(JSON.stringify({ 
+        message: "Ressource mise à jour avec succès",
+        resource
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+      
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la ressource:", error);
+      return new Response(JSON.stringify({ 
+        error: "Erreur lors de la mise à jour de la ressource"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  /**
+   * Supprime une ressource d'information (par son auteur uniquement)
+   * @param req Requête
+   * @param id ID de la ressource
+   * @returns Réponse
+   */
+  async deleteUserOwnInfoResource(req: Request, id: number): Promise<Response> {
+    try {
+      // Vérifier que la ressource existe (sans incrémenter les vues - opération de suppression)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(id);
+      
+      if (!resource) {
+        return new Response(JSON.stringify({ 
+          error: "Ressource non trouvée"
+        }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Récupérer l'ID de l'utilisateur connecté
+      const userId = (req as any).userId;
+
+      // Vérifier que l'utilisateur est l'auteur de la ressource
+      if (resource.author_id !== userId) {
+        return new Response(JSON.stringify({ 
+          error: "Vous ne pouvez supprimer que vos propres ressources"
+        }), {
+          status: 403,
           headers: { "Content-Type": "application/json" },
         });
       }
@@ -553,8 +695,8 @@ export class InfoController {
    */
   async getInfoResourceComments(req: Request, resourceId: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(resourceId);
+      // Vérifier que la ressource existe (sans incrémenter les vues - récupération de commentaires)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
@@ -592,8 +734,8 @@ export class InfoController {
    */
   async addCommentToInfoResource(req: Request, resourceId: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(resourceId);
+      // Vérifier que la ressource existe (sans incrémenter les vues - ajout de commentaire)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
@@ -642,6 +784,64 @@ export class InfoController {
   }
 
   /**
+   * Ajoute une réponse à un commentaire existant
+   * @param req Requête
+   * @param resourceId ID de la ressource
+   * @param commentId ID du commentaire parent
+   * @returns Réponse
+   */
+  async addReplyToComment(req: Request, resourceId: number, commentId: number): Promise<Response> {
+    try {
+      // Vérifier que la ressource existe (sans incrémenter les vues - ajout de réponse)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
+      
+      if (!resource) {
+        return new Response(JSON.stringify({ 
+          error: "Ressource non trouvée"
+        }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      const body = await req.json();
+      const { message } = body;
+      
+      if (!message || message.trim() === '') {
+        return new Response(JSON.stringify({ 
+          error: "Le message ne peut pas être vide"
+        }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      // Récupérer l'ID de l'utilisateur depuis le middleware d'authentification
+      const userId = (req as any).userId;
+      
+      // Ajouter la réponse
+      const reply = await this.infoModel.addReplyToComment(resourceId, userId, message, commentId);
+      
+      return new Response(JSON.stringify({ 
+        message: "Réponse ajoutée avec succès",
+        reply
+      }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      });
+      
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la réponse:", error);
+      return new Response(JSON.stringify({ 
+        error: "Erreur lors de l'ajout de la réponse"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  /**
    * Supprime un commentaire d'une ressource d'information
    * @param req Requête
    * @param resourceId ID de la ressource
@@ -650,8 +850,8 @@ export class InfoController {
    */
   async deleteInfoResourceComment(req: Request, resourceId: number, commentId: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(resourceId);
+      // Vérifier que la ressource existe (sans incrémenter les vues - suppression de commentaire)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
@@ -697,6 +897,74 @@ export class InfoController {
   }
 
   /**
+   * Modifie un commentaire d'une ressource d'information
+   * @param req Requête
+   * @param resourceId ID de la ressource
+   * @param commentId ID du commentaire
+   * @returns Réponse
+   */
+  async updateInfoResourceComment(req: Request, resourceId: number, commentId: number): Promise<Response> {
+    try {
+      // Vérifier que la ressource existe (sans incrémenter les vues - modification de commentaire)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
+      
+      if (!resource) {
+        return new Response(JSON.stringify({ 
+          error: "Ressource non trouvée"
+        }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      const body = await req.json();
+      const { message } = body;
+      
+      if (!message || message.trim() === '') {
+        return new Response(JSON.stringify({ 
+          error: "Le message ne peut pas être vide"
+        }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      // Récupérer l'utilisateur connecté
+      const userId = (req as any).userId;
+      const isAdmin = (req as any).userRole === 'admin';
+      
+      // Modifier le commentaire
+      const updatedComment = await this.infoModel.updateInfoResourceComment(commentId, userId, message.trim(), isAdmin);
+      
+      if (!updatedComment) {
+        return new Response(JSON.stringify({ 
+          error: "Impossible de modifier le commentaire. Vous n'avez peut-être pas les droits nécessaires."
+        }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      return new Response(JSON.stringify({ 
+        message: "Commentaire modifié avec succès",
+        comment: updatedComment
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+      
+    } catch (error) {
+      console.error("Erreur lors de la modification du commentaire:", error);
+      return new Response(JSON.stringify({ 
+        error: "Erreur lors de la modification du commentaire"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  /**
    * Ajoute ou retire un like à une ressource d'information
    * @param req Requête
    * @param resourceId ID de la ressource
@@ -704,8 +972,8 @@ export class InfoController {
    */
   async toggleLikeInfoResource(req: Request, resourceId: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(resourceId);
+      // Vérifier que la ressource existe (sans incrémenter les vues - action de like)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
@@ -751,8 +1019,8 @@ export class InfoController {
    */
   async checkUserLikedInfoResource(req: Request, resourceId: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(resourceId);
+      // Vérifier que la ressource existe (sans incrémenter les vues - vérification de like)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
@@ -793,8 +1061,8 @@ export class InfoController {
    */
   async incrementInfoResourceShares(req: Request, resourceId: number): Promise<Response> {
     try {
-      // Vérifier que la ressource existe
-      const resource = await this.infoModel.getInfoResourceById(resourceId);
+      // Vérifier que la ressource existe (sans incrémenter les vues - action de partage)
+      const resource = await this.infoModel.getInfoResourceByIdInternal(resourceId);
       
       if (!resource) {
         return new Response(JSON.stringify({ 
@@ -820,6 +1088,38 @@ export class InfoController {
       console.error("Erreur lors de l'incrémentation des partages:", error);
       return new Response(JSON.stringify({ 
         error: "Erreur lors de l'incrémentation des partages"
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  /**
+   * Récupère les ressources d'information likées par l'utilisateur connecté
+   * @param req Requête
+   * @returns Réponse
+   */
+  async getUserLikedInfoResources(req: Request): Promise<Response> {
+    try {
+      // Récupérer l'ID de l'utilisateur depuis le middleware d'authentification
+      const userId = (req as any).userId;
+      
+      // Récupérer les ressources likées par l'utilisateur
+      const likedResources = await this.infoModel.getUserLikedInfoResources(userId);
+      
+      return new Response(JSON.stringify({ 
+        resources: likedResources,
+        total: likedResources.length
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+      
+    } catch (error) {
+      console.error("Erreur lors de la récupération des ressources likées:", error);
+      return new Response(JSON.stringify({ 
+        error: "Erreur lors de la récupération des ressources likées"
       }), {
         status: 500,
         headers: { "Content-Type": "application/json" },

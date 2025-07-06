@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./cesi-zen.db:/app/cesi-zen.db
+      - ./src:/app/src
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped 

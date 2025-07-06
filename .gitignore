@@ -3,3 +3,5 @@ node_modules/
 data/
 CesiZenMobile/node_modules/
 BackCesiZen/node_modules/
+ngrok.exe
+BackCesiZen/cesizen.db

@@ -5,45 +5,29 @@ import crypto from 'crypto';
 const TEST_MODE = process.env.EMAIL_TEST_MODE === 'true';
 
 // Configure the email transporter
-let transporter;
+let transporter: any;
 
 if (process.env.EMAIL_SERVICE === 'mailtrap') {
   // Configuration Mailtrap (service gratuit pour les tests)
-  transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-  console.log('📧 Mode Mailtrap activé - les emails seront capturés par Mailtrap');
-} else {
-  // Configuration Gmail par défaut
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-}
-
-// Verify transporter configuration on startup
-if (!TEST_MODE) {
-  transporter.verify()
-    .then(() => console.log('✅ Configuration email vérifiée avec succès'))
-    .catch((err) => {
-      console.error('❌ Erreur de configuration email:', err);
-      console.log('⚠️ Pour utiliser Gmail, assurez-vous d\'avoir:');
-      console.log('   1. Activé l\'authentification à deux facteurs');
-      console.log('   2. Généré un mot de passe d\'application depuis https://myaccount.google.com/apppasswords');
-      console.log('   3. Configuré EMAIL_USER et EMAIL_PASSWORD dans votre .env');
-      console.log('⚠️ Ou pour utiliser Mailtrap:');
-      console.log('   1. Créez un compte gratuit sur mailtrap.io');
-      console.log('   2. Récupérez vos identifiants SMTP dans la boîte de réception par défaut');
-      console.log('   3. Configurez EMAIL_SERVICE=mailtrap, EMAIL_USER et EMAIL_PASSWORD dans votre .env');
+  console.log('📧 Initialisation du transporter Mailtrap...');
+  console.log('📧 EMAIL_USER:', process.env.EMAIL_USER ? 'défini' : 'non défini');
+  console.log('📧 EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? 'défini' : 'non défini');
+  
+  try {
+    transporter = nodemailer.createTransport({
+      host: "sandbox.smtp.mailtrap.io",
+      port: 2525,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      }
     });
+    console.log('📧 Mode Mailtrap activé - les emails seront capturés par Mailtrap');
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'initialisation du transporter Mailtrap:', error);
+  }
+} else {
+  console.log('⚠️ EMAIL_SERVICE non défini ou différent de "mailtrap":', process.env.EMAIL_SERVICE);
 }
 
 export interface EmailOptions {

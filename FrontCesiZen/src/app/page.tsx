@@ -6,22 +6,34 @@ import MainLayout from '../components/MainLayout';
 import DiagnosticCard from '../components/DiagnosticCard';
 import { useState, useEffect } from 'react';
 import { DiagnosticResult } from '../types';
+import { diagnosticApi } from '../services/api.service';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [lastDiagnostic, setLastDiagnostic] = useState<DiagnosticResult | null>(null);
+  const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
 
   useEffect(() => {
-    // Récupérer le dernier diagnostic depuis localStorage
-    const storedDiagnostic = localStorage.getItem('diagnosticResult');
-    if (storedDiagnostic) {
-      try {
-        setLastDiagnostic(JSON.parse(storedDiagnostic));
-      } catch (err) {
-        console.error('Erreur lors de la récupération des données du diagnostic:', err);
+    // Récupérer le dernier diagnostic depuis l'API plutôt que localStorage
+    const fetchLastDiagnostic = async () => {
+      if (isAuthenticated) {
+        try {
+          setLoadingDiagnostic(true);
+          const response = await diagnosticApi.getUserHistory();
+          if (response && response.data && response.data.length > 0) {
+            // Prendre le diagnostic le plus récent
+            setLastDiagnostic(response.data[0]);
+          }
+        } catch (err) {
+          console.error('Erreur lors de la récupération des données du diagnostic:', err);
+        } finally {
+          setLoadingDiagnostic(false);
+        }
       }
-    }
-  }, []);
+    };
+
+    fetchLastDiagnostic();
+  }, [isAuthenticated]);
 
   return (
     <MainLayout>

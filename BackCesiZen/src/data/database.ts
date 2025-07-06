@@ -384,4 +384,64 @@ export async function initDatabase() {
   }
 
   console.log('📦 Tables initialisées avec succès');
+  
+  // Vérifier et initialiser les événements de stress s'ils n'existent pas
+  const stressEventsCount = await db.queryOne('SELECT COUNT(*) as count FROM stress_events');
+  if (stressEventsCount && stressEventsCount.count === 0) {
+    console.log('📦 Initialisation des événements de stress par défaut...');
+    
+    const defaultStressEvents = [
+      { event_text: 'Décès du conjoint', points: 100, category: 'Famille' },
+      { event_text: 'Divorce', points: 73, category: 'Famille' },
+      { event_text: 'Séparation conjugale', points: 65, category: 'Famille' },
+      { event_text: 'Emprisonnement', points: 63, category: 'Personnel' },
+      { event_text: 'Décès d\'un proche parent', points: 63, category: 'Famille' },
+      { event_text: 'Blessure ou maladie personnelle', points: 53, category: 'Santé' },
+      { event_text: 'Mariage', points: 50, category: 'Famille' },
+      { event_text: 'Licenciement', points: 47, category: 'Travail' },
+      { event_text: 'Réconciliation conjugale', points: 45, category: 'Famille' },
+      { event_text: 'Retraite', points: 45, category: 'Travail' },
+      { event_text: 'Changement de santé d\'un membre de la famille', points: 44, category: 'Famille' },
+      { event_text: 'Grossesse', points: 40, category: 'Famille' },
+      { event_text: 'Difficultés sexuelles', points: 39, category: 'Personnel' },
+      { event_text: 'Arrivée d\'un nouveau membre dans la famille', points: 39, category: 'Famille' },
+      { event_text: 'Réajustement des affaires', points: 39, category: 'Travail' },
+      { event_text: 'Changement de situation financière', points: 38, category: 'Finances' },
+      { event_text: 'Décès d\'un ami proche', points: 37, category: 'Social' },
+      { event_text: 'Changement d\'orientation professionnelle', points: 36, category: 'Travail' },
+      { event_text: 'Changement du nombre de disputes conjugales', points: 35, category: 'Famille' },
+      { event_text: 'Hypothèque importante', points: 31, category: 'Finances' },
+      { event_text: 'Saisie d\'hypothèque ou de prêt', points: 30, category: 'Finances' },
+      { event_text: 'Changement de responsabilités au travail', points: 29, category: 'Travail' },
+      { event_text: 'Départ d\'un enfant du foyer', points: 29, category: 'Famille' },
+      { event_text: 'Problèmes avec la belle-famille', points: 29, category: 'Famille' },
+      { event_text: 'Réussite personnelle remarquable', points: 28, category: 'Personnel' },
+      { event_text: 'Conjoint qui commence ou arrête de travailler', points: 26, category: 'Famille' },
+      { event_text: 'Commencer ou finir ses études', points: 26, category: 'Éducation' },
+      { event_text: 'Changement de conditions de vie', points: 25, category: 'Logement' },
+      { event_text: 'Changement d\'habitudes personnelles', points: 24, category: 'Personnel' },
+      { event_text: 'Problèmes avec le patron', points: 23, category: 'Travail' },
+      { event_text: 'Changement d\'horaires ou de conditions de travail', points: 20, category: 'Travail' },
+      { event_text: 'Changement de résidence', points: 20, category: 'Logement' },
+      { event_text: 'Changement d\'école', points: 20, category: 'Éducation' },
+      { event_text: 'Changement de loisirs', points: 19, category: 'Loisirs' },
+      { event_text: 'Changement d\'activités religieuses', points: 19, category: 'Social' },
+      { event_text: 'Changement d\'activités sociales', points: 18, category: 'Social' },
+      { event_text: 'Petit emprunt', points: 17, category: 'Finances' },
+      { event_text: 'Changement d\'habitudes de sommeil', points: 16, category: 'Santé' },
+      { event_text: 'Changement du nombre de réunions familiales', points: 15, category: 'Famille' },
+      { event_text: 'Changement d\'habitudes alimentaires', points: 15, category: 'Santé' },
+      { event_text: 'Vacances', points: 13, category: 'Loisirs' },
+      { event_text: 'Période de Noël', points: 12, category: 'Social' },
+      { event_text: 'Infractions mineures à la loi', points: 11, category: 'Personnel' }
+    ];
+
+    for (const event of defaultStressEvents) {
+      await db.execute(
+        'INSERT INTO stress_events (event_text, points, category) VALUES (?, ?, ?)',
+        [event.event_text, event.points, event.category]
+      );
+    }
+    console.log('📦 Événements de stress par défaut créés');
+  }
 } 

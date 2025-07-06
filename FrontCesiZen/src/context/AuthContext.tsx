@@ -12,6 +12,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<{ message?: string }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,7 +22,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => ({}),
   logout: async () => {},
-  isAuthenticated: false
+  isAuthenticated: false,
+  isInitialized: false
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -37,9 +39,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkAuthStatus = async () => {
       try {
         setLoading(true);
+        console.log("🔍 Vérification du statut d'authentification...");
         const userData = await authService.getCurrentUser();
         if (userData) {
+          console.log("✅ Utilisateur authentifié:", userData.email);
           setUser(userData);
+        } else {
+          console.log("❌ Aucun utilisateur authentifié");
         }
       } catch (err) {
         console.error('Erreur lors de la vérification du statut d\'authentification:', err);
@@ -129,7 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        isInitialized
       }}
     >
       {children}

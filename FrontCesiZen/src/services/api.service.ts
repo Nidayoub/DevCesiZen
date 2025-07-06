@@ -9,21 +9,18 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true // Toujours inclure les cookies pour toutes les requêtes
 });
 
-// Intercepteur pour ajouter le token d'authentification si disponible
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// API des utilisateurs (admin)
+export const usersApi = {
+  getAll: () => api.get('/api/users'),
+  getById: (id: number) => api.get(`/api/users/${id}`),
+  create: (data: any) => api.post('/api/users', data),
+  update: (id: number, data: any) => api.put(`/api/users/${id}`, data),
+  delete: (id: number) => api.delete(`/api/users/${id}`),
+  changeRole: (id: number, role: string) => api.put(`/api/users/${id}/role`, { role }),
+};
 
 // API des ressources
 export const resourcesApi = {
@@ -38,12 +35,27 @@ export const resourcesApi = {
 export const categoriesApi = {
   getAll: () => api.get('/api/categories'),
   getById: (id: number) => api.get(`/api/categories/${id}`),
+  create: (data: any) => api.post('/api/categories', data),
+  update: (id: number, data: any) => api.put(`/api/categories/${id}`, data),
+  delete: (id: number) => api.delete(`/api/categories/${id}`),
+};
+
+export const diagnosticCategoriesApi = {
+  getAll: () => api.get('/api/diagnostic-categories'),
+  getAllWithCount: () => api.get('/api/diagnostic-categories/with-count'),
+  getById: (id: number) => api.get(`/api/diagnostic-categories/${id}`),
+  create: (data: any) => api.post('/api/diagnostic-categories', data),
+  update: (id: number, data: any) => api.put(`/api/diagnostic-categories/${id}`, data),
+  delete: (id: number) => api.delete(`/api/diagnostic-categories/${id}`),
 };
 
 // API des informations
 export const infoApi = {
   getAll: () => api.get('/api/info'),
   getBySlug: (slug: string) => api.get(`/api/info/${slug}`),
+  create: (data: any) => api.post('/api/info', data),
+  update: (id: number, data: any) => api.put(`/api/info/${id}`, data),
+  delete: (id: number) => api.delete(`/api/info/${id}`),
 };
 
 // API des ressources d'information
@@ -63,8 +75,10 @@ export const infoResourcesApi = {
   getComments: (resourceId: number) => api.get(`/api/info/resources/${resourceId}/comments`),
   addComment: (resourceId: number, message: string) => 
     api.post(`/api/info/resources/${resourceId}/comments`, { message }),
-  deleteComment: (resourceId: number, commentId: number) => 
+    deleteComment: (resourceId: number, commentId: number) =>
     api.delete(`/api/info/resources/${resourceId}/comments/${commentId}`),
+  updateComment: (resourceId: number, commentId: number, message: string) =>
+    api.put(`/api/info/resources/${resourceId}/comments/${commentId}`, { message }),
   toggleLike: (resourceId: number) => api.post(`/api/info/resources/${resourceId}/likes`),
   checkLiked: (resourceId: number) => api.get(`/api/info/resources/${resourceId}/likes`),
   incrementShares: (resourceId: number) => api.post(`/api/info/resources/${resourceId}/shares`),
@@ -78,6 +92,8 @@ export const diagnosticApi = {
   getQuestions: () => api.get('/api/diagnostic/questions'),
   submitDiagnostic: (data: any) => api.post('/api/diagnostic/submit', data),
   getUserHistory: () => api.get('/api/diagnostic/history'),
+  // Administration du diagnostic (admin uniquement)
+  configureQuestions: (data: any) => api.post('/api/diagnostic/configure', data),
 };
 
 // API des émotions
@@ -108,7 +124,9 @@ export const emotionsApi = {
 // Ajouter l'API pour les exercices de respiration
 export const breathingApi = {
   getAllExercises: async () => {
-    const response = await fetch(`${API_URL}/api/breathing`);
+    const response = await fetch(`${API_URL}/api/breathing`, {
+      credentials: 'include' // Inclure les cookies pour cette requête
+    });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Failed to fetch breathing exercises and could not parse error response' }));
       console.error('Error fetching breathing exercises:', errorData);
@@ -117,7 +135,9 @@ export const breathingApi = {
     return response.json();
   },
   getExerciseById: async (id: string | number) => {
-    const response = await fetch(`${API_URL}/api/breathing/${id}`);
+    const response = await fetch(`${API_URL}/api/breathing/${id}`, {
+      credentials: 'include' // Inclure les cookies pour cette requête
+    });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: `Failed to fetch breathing exercise ${id} and could not parse error response` }));
       console.error(`Error fetching breathing exercise ${id}:`, errorData);
@@ -126,7 +146,9 @@ export const breathingApi = {
     return response.json();
   },
   getExerciseTypes: async () => {
-    const response = await fetch(`${API_URL}/api/breathing/types`);
+    const response = await fetch(`${API_URL}/api/breathing/types`, {
+      credentials: 'include' // Inclure les cookies pour cette requête
+    });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Failed to fetch breathing exercise types and could not parse error response' }));
       console.error('Error fetching breathing exercise types:', errorData);
@@ -134,6 +156,19 @@ export const breathingApi = {
     }
     return response.json();
   }
+};
+
+// API des médias
+export const mediaApi = {
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('media', file);
+    return api.post('/api/media/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 export default api; 

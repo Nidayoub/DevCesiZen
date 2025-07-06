@@ -180,7 +180,7 @@ export default function DiagnosticPage() {
 
       const response = await diagnosticApi.submitDiagnostic(dataToSend);
       
-      localStorage.setItem('diagnosticResult', JSON.stringify(response.data));
+      // Ne plus stocker le résultat dans localStorage, uniquement dans l'état React
       setDiagnosticResult(response.data);
       setShowResults(true);
       
@@ -354,9 +354,12 @@ export default function DiagnosticPage() {
               Évaluez votre niveau de stress selon l'échelle de Holmes et Rahe
             </p>
             {isAuthenticated && (
-              <div className="mt-4">
+              <div className="mt-4 space-x-4">
                 <Link href="/diagnostic/history" className="text-indigo-600 hover:text-indigo-800 border border-indigo-300 rounded-md px-4 py-2 text-sm font-medium">
-                  Voir mon historique de diagnostics
+                  Voir mon historique
+                </Link>
+                <Link href="/diagnostic/create" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium">
+                  Créer un diagnostic
                 </Link>
               </div>
             )}

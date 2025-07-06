@@ -5,61 +5,64 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '../../../../components/MainLayout';
 import { useAuth } from '../../../../context/AuthContext';
+import { infoResourcesApi } from '../../../../services/api.service';
+
+interface Comment {
+  id: number;
+  info_resource_id: number;
+  user_id: number;
+  message: string;
+  comment_date: string;
+  parent_id?: number | null;
+  user_firstname?: string;
+  user_lastname?: string;
+  replies?: Comment[];
+}
 
 export default function ResourceDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   
   const [resource, setResource] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [likeCount, setLikeCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [likingInProgress, setLikingInProgress] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [deletingComment, setDeletingComment] = useState<number | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editCommentText, setEditCommentText] = useState('');
+  const [updatingComment, setUpdatingComment] = useState<number | null>(null);
+  const [replyingToComment, setReplyingToComment] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [submittingReply, setSubmittingReply] = useState(false);
 
   useEffect(() => {
     const fetchResource = async () => {
       try {
         setLoading(true);
         
-        // Appel à l'API pour récupérer la ressource
-        const resourceResponse = await fetch(`http://localhost:3000/api/info/resources/${params.id}`);
-        
-        if (!resourceResponse.ok) {
-          throw new Error(`Erreur de récupération de la ressource: ${resourceResponse.status}`);
-        }
-        
-        const resourceData = await resourceResponse.json();
-        setResource(resourceData.resource);
-        setLikeCount(resourceData.resource.likes_count);
+        const response = await infoResourcesApi.getById(Number(params.id));
+        setResource(response.data.resource);
+        setLikeCount(response.data.resource.likes_count || 0);
         
         // Récupérer les commentaires
-        const commentsResponse = await fetch(`http://localhost:3000/api/info/resources/${params.id}/comments`);
-        
-        if (commentsResponse.ok) {
-          const commentsData = await commentsResponse.json();
-          setResource(prev => ({
+        const commentsResponse = await infoResourcesApi.getComments(Number(params.id));
+          setResource((prev: any) => ({
             ...prev,
-            comments: commentsData.comments
+          comments: commentsResponse.data.comments || []
           }));
-        }
         
         // Vérifier si l'utilisateur a déjà liké cette ressource (si connecté)
         if (isAuthenticated) {
           try {
-            const likeResponse = await fetch(`http://localhost:3000/api/info/resources/${params.id}/likes`, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              }
-            });
-            
-            if (likeResponse.ok) {
-              const likeData = await likeResponse.json();
-              setIsLiked(likeData.isLiked);
-            }
+            const likeResponse = await infoResourcesApi.checkLiked(Number(params.id));
+            setIsLiked(likeResponse.data.isLiked);
           } catch (error) {
             console.error('Erreur lors de la vérification du like:', error);
           }
@@ -77,41 +80,56 @@ export default function ResourceDetailPage() {
   }, [params.id, isAuthenticated]);
 
   // Formater la date pour l'affichage
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Date inconnue';
+    
+    try {
+      const date = new Date(dateString);
+      // Vérifier si la date est valide
+      if (isNaN(date.getTime())) {
+        return 'Date invalide';
+      }
+      
+      return new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (error) {
+      console.error('Erreur de formatage de date:', error, 'pour la valeur:', dateString);
+      return 'Date invalide';
+    }
+  };
+
+  const formatUserName = (comment: Comment) => {
+    if (comment.user_firstname && comment.user_lastname) {
+      return `${comment.user_firstname} ${comment.user_lastname}`;
+    }
+    return 'Utilisateur anonyme';
   };
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim()) return;
     
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    
     try {
       setSubmittingComment(true);
+      await infoResourcesApi.addComment(Number(params.id), commentText.trim());
       
-      // Appel à l'API pour ajouter un commentaire
-      const response = await fetch(`http://localhost:3000/api/info/resources/${params.id}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ message: commentText })
-      });
+      // Recharger les commentaires
+      const commentsResponse = await infoResourcesApi.getComments(Number(params.id));
+      setResource((prev: any) => ({
+        ...prev,
+        comments: commentsResponse.data.comments || [],
+        comments_count: (prev.comments_count || 0) + 1
+      }));
       
-      if (!response.ok) {
-        throw new Error(`Erreur: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Rafraîchir la page pour afficher le commentaire ajouté
-      window.location.reload();
-      
-      // Réinitialisation du formulaire
       setCommentText('');
       setSubmittingComment(false);
     } catch (err) {
@@ -121,47 +139,312 @@ export default function ResourceDetailPage() {
     }
   };
 
-  const handleLikeToggle = async () => {
-    if (isAuthenticated) {
-      try {
-        // Appel à l'API pour ajouter/retirer un like
-        const response = await fetch(`http://localhost:3000/api/info/resources/${params.id}/likes`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Erreur: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // Mettre à jour l'état avec les données renvoyées par l'API
-        setIsLiked(data.isLiked);
-        
-        // Rafraîchir la page pour avoir le compte exact
-        window.location.reload();
-      } catch (error) {
-        console.error('Erreur lors de la gestion du like:', error);
-        alert("Erreur lors de la gestion du like. Veuillez réessayer.");
+  const handleReplySubmit = async (parentId: number) => {
+    if (!replyText.trim()) return;
+    
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    
+    try {
+      setSubmittingReply(true);
+      
+      // Utiliser l'API pour ajouter une réponse
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiBaseUrl}/api/info/resources/${params.id}/comments/${parentId}/replies`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: replyText.trim() }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur: ${response.status}`);
       }
-    } else {
-      // Rediriger vers la page de connexion
-      router.push('/auth/login');
+      
+      // Recharger les commentaires
+      const commentsResponse = await infoResourcesApi.getComments(Number(params.id));
+      setResource((prev: any) => ({
+        ...prev,
+        comments: commentsResponse.data.comments || [],
+        comments_count: (prev.comments_count || 0) + 1
+      }));
+      
+      setReplyText('');
+      setReplyingToComment(null);
+      setSubmittingReply(false);
+    } catch (err) {
+      console.error('Erreur lors de l\'ajout de la réponse:', err);
+      setSubmittingReply(false);
+      alert("Erreur lors de l'ajout de la réponse. Veuillez réessayer.");
     }
   };
 
-  return (
-    <MainLayout>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-          </div>
-        ) : error ? (
+  const handleLikeToggle = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    
+    if (likingInProgress) return;
+    
+    try {
+      setLikingInProgress(true);
+      const response = await infoResourcesApi.toggleLike(Number(params.id));
+      
+      const newLikedState = response.data.isLiked;
+      setIsLiked(newLikedState);
+      setLikeCount(prevCount => newLikedState ? prevCount + 1 : prevCount - 1);
+      
+    } catch (error) {
+      console.error('Erreur lors de la gestion du like:', error);
+      alert("Erreur lors de la gestion du like. Veuillez réessayer.");
+    } finally {
+      setLikingInProgress(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!user) return;
+    
+    try {
+      setDeletingComment(commentId);
+      await infoResourcesApi.deleteComment(Number(params.id), commentId);
+      
+      // Recharger les commentaires
+      const commentsResponse = await infoResourcesApi.getComments(Number(params.id));
+        setResource((prev: any) => ({
+          ...prev,
+        comments: commentsResponse.data.comments || [],
+        comments_count: Math.max(0, (prev.comments_count || 0) - 1)
+        }));
+      
+      setShowDeleteModal(false);
+      setCommentToDelete(null);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du commentaire:', error);
+      alert("Erreur lors de la suppression du commentaire. Veuillez réessayer.");
+    } finally {
+      setDeletingComment(null);
+    }
+  };
+
+  const confirmDeleteComment = (commentId: number) => {
+    setCommentToDelete(commentId);
+    setShowDeleteModal(true);
+  };
+
+  const cancelDeleteComment = () => {
+    setShowDeleteModal(false);
+    setCommentToDelete(null);
+  };
+
+  const startEditComment = (commentId: number, currentMessage: string) => {
+    setEditingComment(commentId);
+    setEditCommentText(currentMessage);
+  };
+
+  const cancelEditComment = () => {
+    setEditingComment(null);
+    setEditCommentText('');
+  };
+
+  const handleUpdateComment = async (commentId: number) => {
+    if (!user) return;
+
+    if (!editCommentText.trim()) {
+      alert('Le commentaire ne peut pas être vide.');
+      return;
+    }
+
+    try {
+      setUpdatingComment(commentId);
+      await infoResourcesApi.updateComment(Number(params.id), commentId, editCommentText.trim());
+      
+      // Recharger les commentaires
+      const commentsResponse = await infoResourcesApi.getComments(Number(params.id));
+        setResource((prev: any) => ({
+          ...prev,
+        comments: commentsResponse.data.comments || []
+        }));
+      
+      setEditingComment(null);
+      setEditCommentText('');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du commentaire:', error);
+      alert("Erreur lors de la mise à jour du commentaire. Veuillez réessayer.");
+    } finally {
+      setUpdatingComment(null);
+    }
+  };
+
+  const startReply = (commentId: number) => {
+    setReplyingToComment(commentId);
+    setReplyText('');
+  };
+
+  const cancelReply = () => {
+    setReplyingToComment(null);
+    setReplyText('');
+  };
+
+  const canDeleteComment = (comment: Comment) => {
+    if (!user) return false;
+    return comment.user_id === user.id || user.role === 'admin';
+  };
+
+  const canEditComment = (comment: Comment) => {
+    if (!user) return false;
+    return comment.user_id === user.id;
+  };
+
+  const renderComment = (comment: Comment, isReply: boolean = false) => (
+    <div key={comment.id} className={`${isReply ? 'ml-8 mt-3' : 'mb-4'} bg-gray-50 p-4 rounded-lg`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+          <div className="font-medium text-gray-900">{formatUserName(comment)}</div>
+                      <div className="text-sm text-gray-500 ml-2">
+            {formatDate(comment.comment_date)}
+                      </div>
+                    </div>
+                    
+        {/* Boutons d'action */}
+        {user && (
+                      <div className="flex items-center gap-2">
+                        {/* Bouton de modification */}
+            {canEditComment(comment) && editingComment !== comment.id && (
+                          <button
+                            onClick={() => startEditComment(comment.id, comment.message)}
+                            className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors"
+                            title="Modifier ce commentaire"
+                          >
+                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        )}
+                        
+                        {/* Bouton de suppression */}
+            {canDeleteComment(comment) && (
+                        <button
+                          onClick={() => confirmDeleteComment(comment.id)}
+                          className="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors"
+                          disabled={deletingComment === comment.id}
+                          title="Supprimer ce commentaire"
+                        >
+                          {deletingComment === comment.id ? (
+                            <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                        </button>
+            )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Contenu du commentaire ou interface d'édition */}
+                  {editingComment === comment.id ? (
+                    <div className="mt-2">
+                      <textarea
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        rows={3}
+                        value={editCommentText}
+                        onChange={(e) => setEditCommentText(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button
+                          onClick={cancelEditComment}
+                          className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                        >
+                          Annuler
+                        </button>
+                        <button
+                          onClick={() => handleUpdateComment(comment.id)}
+                          className="px-3 py-1 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                          disabled={updatingComment === comment.id || !editCommentText.trim()}
+                        >
+              {updatingComment === comment.id ? 'Modification...' : 'Sauvegarder'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+        <div>
+                    <p className="text-gray-700">{comment.message}</p>
+          
+          {/* Bouton de réponse (seulement pour les commentaires principaux) */}
+          {!isReply && isAuthenticated && (
+            <div className="mt-3">
+              <button
+                onClick={() => startReply(comment.id)}
+                className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+              >
+                Répondre
+              </button>
+            </div>
+          )}
+          
+          {/* Interface de réponse */}
+          {replyingToComment === comment.id && (
+            <div className="mt-3 p-3 bg-white rounded-md border">
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                rows={3}
+                placeholder="Écrivez votre réponse..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+              />
+              <div className="flex justify-end gap-2 mt-2">
+                <button
+                  onClick={cancelReply}
+                  className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => handleReplySubmit(comment.id)}
+                  className="px-3 py-1 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                  disabled={submittingReply || !replyText.trim()}
+                >
+                  {submittingReply ? 'Envoi...' : 'Répondre'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Affichage des réponses */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-4">
+          {comment.replies.map((reply) => renderComment(reply, true))}
+        </div>
+      )}
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="bg-red-50 border-l-4 border-red-400 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -174,93 +457,55 @@ export default function ResourceDetailPage() {
               </div>
             </div>
           </div>
-        ) : resource && (
-          <div>
-            {/* Fil d'Ariane */}
-            <nav className="text-sm font-medium mb-6" aria-label="Breadcrumb">
-              <ol className="flex items-center space-x-2">
-                <li>
-                  <Link href="/" className="text-gray-500 hover:text-gray-700">
-                    Accueil
-                  </Link>
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </li>
-                <li>
-                  <Link href="/info/resources" className="text-gray-500 hover:text-gray-700">
-                    Ressources
-                  </Link>
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </li>
-                <li>
-                  <span className="text-gray-700">{resource.title}</span>
-                </li>
-              </ol>
-            </nav>
+        </div>
+      </MainLayout>
+    );
+  }
 
+  if (!resource) {
+    return (
+      <MainLayout>
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Ressource non trouvée</h1>
+            <p className="mt-2 text-gray-600">La ressource que vous recherchez n'existe pas ou a été supprimée.</p>
+            <Link href="/info/resources" className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Retour aux ressources
+            </Link>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+          <div className="p-6">
             {/* En-tête de l'article */}
-            <div className="mb-8">
-              <div className="flex items-center mb-2">
-                <Link
-                  href={`/info/resources?category=${encodeURIComponent(resource.category)}`}
-                  className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
-                >
-                  {resource.category}
-                </Link>
-                
-                <span className="ml-2 text-sm text-gray-500 flex items-center">
-                  <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="border-b border-gray-200 pb-6 mb-6">
+              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                {resource.category}
+              </span>
+              <h1 className="text-3xl font-bold text-gray-900 mt-3">{resource.title}</h1>
+              <p className="text-xl text-gray-600 mt-2">{resource.summary}</p>
+              
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex items-center text-sm text-gray-500">
+                  <svg className="w-4 h-4 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {resource.reading_time} de lecture
-                </span>
-                
-                <span className="ml-2 text-sm text-gray-500 flex items-center">
-                  <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  {resource.level}
-                </span>
-              </div>
-              
-              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">{resource.title}</h1>
-              
-              <p className="mt-2 text-xl text-gray-500">{resource.summary}</p>
-              
-              <div className="mt-4 flex items-center text-sm text-gray-500">
-                <time dateTime={resource.publication_date}>
-                  Publié le {formatDate(resource.publication_date)}
-                </time>
-                
-                {resource.modification_date !== resource.publication_date && (
-                  <span className="ml-2">
-                    • Mis à jour le {formatDate(resource.modification_date)}
-                  </span>
-                )}
-              </div>
-              
-              <div className="mt-4 flex flex-wrap gap-1">
-                {resource.tags?.map((tag: string) => (
-                  <Link 
-                    key={tag} 
-                    href={`/info/resources?tag=${encodeURIComponent(tag)}`}
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
-                  >
-                    #{tag}
-                  </Link>
-                ))}
+                  {resource.reading_time || "5 min"}
+                </div>
+                <div className="text-sm text-gray-900">
+                  {formatDate(resource.publication_date)}
+                </div>
               </div>
             </div>
 
             {/* Contenu de l'article */}
-            <div className="prose prose-indigo prose-lg max-w-none mb-8 text-gray-800 prose-headings:text-gray-900 prose-p:text-gray-700" dangerouslySetInnerHTML={{ __html: resource.content }} />
+            <div className="prose prose-indigo prose-lg max-w-none mb-8 text-gray-800" dangerouslySetInnerHTML={{ __html: resource.content }} />
 
             {/* Interactions */}
             <div className="border-t border-gray-200 pt-6 mt-8">
@@ -287,22 +532,7 @@ export default function ResourceDetailPage() {
                     <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
                     <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
                   </svg>
-                  <span>{resource.comments_count} Commentaires</span>
-                </div>
-                
-                <div className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700">
-                  <svg className="w-5 h-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                  </svg>
-                  <span>{resource.shares} Partages</span>
-                </div>
-                
-                <div className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700">
-                  <svg className="w-5 h-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                  </svg>
-                  <span>{resource.views} Vues</span>
+                  <span>{resource.comments?.length || 0} Commentaires</span>
                 </div>
               </div>
             </div>
@@ -311,17 +541,7 @@ export default function ResourceDetailPage() {
             <div className="mt-8">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Commentaires ({resource.comments?.length || 0})</h2>
               
-              {resource.comments?.map((comment: any) => (
-                <div key={comment.id} className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <div className="flex items-center mb-2">
-                    <div className="font-medium text-gray-900">{comment.user_name}</div>
-                    <div className="text-sm text-gray-500 ml-2">
-                      {formatDate(comment.created_at)}
-                    </div>
-                  </div>
-                  <p className="text-gray-700">{comment.message}</p>
-                </div>
-              ))}
+              {resource.comments?.map((comment: Comment) => renderComment(comment))}
               
               {isAuthenticated ? (
                 <div className="mt-6">
@@ -338,17 +558,53 @@ export default function ResourceDetailPage() {
                     className="mt-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     disabled={submittingComment}
                   >
-                    Publier
+                    {submittingComment ? 'Publication...' : 'Publier'}
                   </button>
                 </div>
               ) : (
                 <div className="mt-6 bg-gray-50 p-4 rounded-lg text-center">
                   <p className="text-gray-700 mb-2">Connectez-vous pour ajouter un commentaire</p>
-                  <Link href="/auth/login" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  <Link href="/login" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Se connecter
                   </Link>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Modal de confirmation de suppression */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <svg className="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-3">Supprimer le commentaire</h3>
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action ne peut pas être annulée.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-4 mt-4">
+                  <button
+                    onClick={cancelDeleteComment}
+                    className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md hover:bg-gray-600 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => commentToDelete && handleDeleteComment(commentToDelete)}
+                    className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md hover:bg-red-700 transition-colors"
+                    disabled={deletingComment !== null}
+                  >
+                    {deletingComment !== null ? 'Suppression...' : 'Supprimer'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

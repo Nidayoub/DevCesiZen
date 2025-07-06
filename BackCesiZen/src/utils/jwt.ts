@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
 const SECRET_KEY = new TextEncoder().encode(JWT_SECRET);
 
 export interface JWTPayload {
@@ -15,7 +15,7 @@ export const generateToken = async (payload: JWTPayload): Promise<string> => {
     const token = await new SignJWT(payload)
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime('1h') // Expire dans 7 jours
+      .setExpirationTime('7d') // Expire dans 7 jours
       .sign(SECRET_KEY);
     
     console.log("✅ Token JWT généré avec succès");
