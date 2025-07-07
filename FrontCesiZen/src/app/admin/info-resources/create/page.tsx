@@ -36,7 +36,7 @@ export default function CreateInfoResourcePage() {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [mediaUpload, setMediaUpload] = useState<{type: string, url: string, filename: string} | null>(null);
+  const [mediaUpload, setMediaUpload] = useState<{type: 'image' | 'video', content: string, filename: string} | null>(null);
   const [uploadingMedia, setUploadingMedia] = useState(false);
 
   const categories = [
@@ -546,7 +546,7 @@ Vous pouvez utiliser le Markdown pour formater votre texte :
                               {mediaUpload.type === 'image' && (
                                 <div className="rounded-lg overflow-hidden relative w-full h-48">
                                   <Image 
-                                    src={mediaUpload.url} 
+                                    src={mediaUpload.content} 
                                     alt="Aperçu"
                                     fill
                                     className="object-cover"
@@ -556,7 +556,7 @@ Vous pouvez utiliser le Markdown pour formater votre texte :
                               {mediaUpload.type === 'video' && (
                                 <div className="rounded-lg overflow-hidden">
                                   <video 
-                                    src={mediaUpload.url}
+                                    src={mediaUpload.content}
                                     controls
                                     className="w-full h-48 object-cover"
                                   />

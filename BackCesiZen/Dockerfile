@@ -11,6 +11,8 @@ RUN bun install
 # Copier le code source
 COPY . .
 
+COPY .env* ./
+
 # Exposer le port utilisé par l'application
 EXPOSE 3000
 
