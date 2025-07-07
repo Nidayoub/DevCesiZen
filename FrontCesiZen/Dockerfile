@@ -6,8 +6,8 @@ WORKDIR /app
 # Copier les fichiers de dépendances
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm install
+# Installer les dépendances avec legacy peer deps pour résoudre les conflits React 19
+RUN npm install --legacy-peer-deps
 
 # Copier le code source
 COPY . .
