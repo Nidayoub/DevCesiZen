@@ -13,6 +13,7 @@ import "./utils/initData";
 
 // Configuration CORS dynamique
 const allowedOrigin = process.env.FRONTEND_URL;
+console.log(allowedOrigin);
 const corsHeaders = {
   "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -77,4 +78,4 @@ const server = serve({
   port: PORT,
 });
 
-console.log(`🚀 Serveur CESIZen démarré sur http://localhost:${PORT}`); 
+console.log(`🚀 Serveur CESIZen démarré sur ${process.env.FRONTEND_URL}`); 
