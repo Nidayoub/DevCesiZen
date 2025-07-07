@@ -52,3 +52,5 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+
+BackCesiZen/cesi-zen.db
