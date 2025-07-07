@@ -11,7 +11,7 @@ services:
       - NODE_ENV=production
     volumes:
       - ./BackCesiZen/uploads:/app/uploads
-      - ./BackCesiZen:/app/data
+      - ./BackCesiZen/cesi-zen.db:/app/cesi-zen.db
 
   frontend:
     build:
