@@ -22,7 +22,10 @@ class DatabaseConnection {
 
     try {
       console.log("📊 Tentative de connexion à la base de données");
-      this.db = new Database('cesi-zen.db');
+      // Chemin adaptatif selon l'environnement
+      const dbPath = process.env.DB_PATH;
+      console.log(`📊 Chemin de la base de données: ${dbPath}`);
+      this.db = new Database(dbPath);
       this.isConnected = true;
       console.log('📊 Connecté avec succès à la base de données SQLite');
     } catch (error) {
