@@ -5,13 +5,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    user: root
     env_file:
       - ./BackCesiZen/.env
     environment:
       - NODE_ENV=production
     volumes:
       - ./BackCesiZen/uploads:/app/uploads
-      - ./BackCesiZen:/app/data
+      - cesizen_data:/app/data
 
   frontend:
     build:
@@ -23,4 +24,7 @@ services:
       - NODE_ENV=production
     depends_on:
       - backend
+
+volumes:
+  cesizen_data:
 

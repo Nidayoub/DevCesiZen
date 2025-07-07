@@ -23,8 +23,21 @@ class DatabaseConnection {
     try {
       console.log("📊 Tentative de connexion à la base de données");
       // Chemin adaptatif selon l'environnement
-      const dbPath = process.env.DB_PATH;
+      const dbPath = process.env.DB_PATH || 'cesi-zen.db';
       console.log(`📊 Chemin de la base de données: ${dbPath}`);
+      
+      // Vérifiez si le répertoire existe, sinon créez-le
+      const fs = require('fs');
+      const path = require('path');
+      const dbDir = path.dirname(dbPath);
+      console.log(`📊 Répertoire de la DB: ${dbDir}`);
+      console.log(`📊 Le répertoire existe: ${fs.existsSync(dbDir)}`);
+      
+      if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+        console.log(`📊 Répertoire créé: ${dbDir}`);
+      }
+      
       this.db = new Database(dbPath);
       this.isConnected = true;
       console.log('📊 Connecté avec succès à la base de données SQLite');
