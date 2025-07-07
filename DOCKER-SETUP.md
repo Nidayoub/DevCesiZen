@@ -22,8 +22,8 @@ FRONTEND_URL=http://localhost:3001
 # Environnement
 NODE_ENV=production
 
-# Chemin de la base de données pour Docker
-DB_PATH=/app/cesi-zen.db
+# Chemin de la base de données (optionnel - défini automatiquement par Docker)
+# DB_PATH=/app/data/cesi-zen.db
 ```
 
 ## 🔧 Instructions de déploiement sur VM
@@ -58,10 +58,10 @@ DB_PATH=/app/cesi-zen.db
 
 ### En développement local :
 - La base de données est créée dans `BackCesiZen/cesi-zen.db`
-- Aucune configuration supplémentaire nécessaire (ne pas définir `DB_PATH` dans votre .env local)
+- Aucune configuration supplémentaire nécessaire
 - Lancez avec : `cd BackCesiZen && bun start`
 
 ### En Docker :
-- La base de données est montée depuis l'hôte vers `/app/cesi-zen.db`
-- La variable `DB_PATH=/app/cesi-zen.db` est définie dans le fichier `.env`
-- Toutes les données restent persistées sur l'hôte dans `BackCesiZen/cesi-zen.db` 
+- La base de données est montée depuis l'hôte vers `/app/data/cesi-zen.db`
+- La variable `DB_PATH` est automatiquement définie par docker-compose
+- Toutes les données restent persistées sur l'hôte dans `BackCesiZen/` 
