@@ -1,4 +1,5 @@
 import { UserModel } from "../models/User";
+import { authMiddleware } from "./authMiddleware";
 
 /**
  * Middleware d'administration
@@ -8,7 +9,13 @@ import { UserModel } from "../models/User";
  */
 export async function adminMiddleware(req: Request): Promise<Response | null> {
   try {
-    // Récupérer l'ID utilisateur
+    // D'abord vérifier l'authentification
+    const authError = await authMiddleware(req);
+    if (authError) {
+      return authError;
+    }
+    
+    // Récupérer l'ID utilisateur (défini par authMiddleware)
     const userId = (req as any).userId;
     if (!userId) {
       return new Response(JSON.stringify({ 

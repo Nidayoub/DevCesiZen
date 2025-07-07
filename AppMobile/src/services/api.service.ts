@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 // Pour iOS: utiliser localhost ou une URL ngrok
 const API_URL = Platform.select({
   android: 'http://10.0.2.2:3000',
-  ios: 'https://6b23-2001-861-5581-3540-7cb7-827e-e813-6d44.ngrok-free.app',
+  ios: 'https://d406-2a02-8440-9124-d860-a16c-de70-c931-320c.ngrok-free.app',
   default: 'http://localhost:3000'
 });
 
@@ -169,6 +169,15 @@ export const mediaApi = {
       timeout: 30000, // 30 secondes pour l'upload
     });
   },
+};
+
+// Reports API
+export const reportsApi = {
+  create: (contentType: 'comment' | 'resource', contentId: number, reason: string, description?: string) => 
+    api.post('/api/reports', { content_type: contentType, content_id: contentId, reason, description }),
+  
+  checkReported: (contentType: 'comment' | 'resource', contentId: number) => 
+    api.get(`/api/reports/check?content_type=${contentType}&content_id=${contentId}`),
 };
 
 export default api; 

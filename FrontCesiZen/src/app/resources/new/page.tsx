@@ -19,7 +19,7 @@ export default function CreateResourcePage() {
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<{id: number, name: string, description?: string}[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  const [mediaUpload, setMediaUpload] = useState<{type: 'image' | 'video', url: string, filename: string} | null>(null);
+  const [mediaUpload, setMediaUpload] = useState<{type: 'image' | 'video', content: string, filename: string} | null>(null);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +45,7 @@ export default function CreateResourcePage() {
           { id: 4, name: 'alimentation', description: 'Nutrition et alimentation' },
           { id: 5, name: 'exercice', description: 'Activité physique' },
           { id: 6, name: 'meditation', description: 'Méditation et pleine conscience' },
-          { id: 7, name: 'respiration', description: 'Techniques de respiration' },
+      
           { id: 8, name: 'productivite', description: 'Productivité et organisation' },
           { id: 9, name: 'motivation', description: 'Motivation et développement personnel' },
         ]);
@@ -184,7 +184,7 @@ export default function CreateResourcePage() {
         reading_time: readingTime || undefined,
         level,
         media_type: mediaUpload?.type || undefined,
-        media_url: mediaUpload?.url || undefined,
+        media_content: mediaUpload?.content || undefined,
         media_filename: mediaUpload?.filename || undefined
       };
       await infoResourcesApi.create(resourceData);
@@ -524,10 +524,10 @@ Vous pouvez utiliser le Markdown pour formater votre texte :
                         </div>
                         <div className="mt-3">
                           {mediaUpload.type === 'image' && (
-                            <img src={mediaUpload.url} alt="Prévisualisation" className="max-w-xs max-h-40 object-cover rounded-lg shadow-sm" />
+                            <img src={mediaUpload.content} alt="Prévisualisation" className="max-w-xs max-h-40 object-cover rounded-lg shadow-sm" />
                           )}
                           {mediaUpload.type === 'video' && (
-                            <video src={mediaUpload.url} controls className="max-w-xs max-h-40 rounded-lg shadow-sm" />
+                            <video src={mediaUpload.content} controls className="max-w-xs max-h-40 rounded-lg shadow-sm" />
                           )}
                           
                           <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">

@@ -41,8 +41,11 @@ const DiagnosticHistoryScreen = () => {
       if (showLoading) setLoading(true);
       const response = await diagnosticApi.getUserHistory();
       
-      // L'API renvoie maintenant directement un tableau
-      if (Array.isArray(response.data)) {
+      // L'API renvoie maintenant un objet avec une propriété diagnostics
+      if (response.data && Array.isArray(response.data.diagnostics)) {
+        setDiagnostics(response.data.diagnostics);
+      } else if (Array.isArray(response.data)) {
+        // Fallback pour l'ancien format si jamais
         setDiagnostics(response.data);
       } else {
         console.error('Format de réponse inattendu:', response.data);

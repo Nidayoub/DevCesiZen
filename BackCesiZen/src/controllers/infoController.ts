@@ -389,7 +389,7 @@ export class InfoController {
   async createInfoResource(req: Request): Promise<Response> {
     try {
       const body = await req.json();
-      const { title, summary, content, category, tags, reading_time, level, media_type, media_url, media_filename } = body;
+      const { title, summary, content, category, tags, reading_time, level, media_type, media_content, media_filename } = body;
       
       // Vérifier que les champs nécessaires sont présents
       if (!title || !summary || !content || !category) {
@@ -414,7 +414,7 @@ export class InfoController {
         reading_time,
         level,
         media_type,
-        media_url,
+        media_content,
         media_filename
       }, tags || []);
       
@@ -458,7 +458,7 @@ export class InfoController {
       }
       
       const body = await req.json();
-      const { title, summary, content, category, tags, reading_time, level, media_type, media_url, media_filename } = body;
+      const { title, summary, content, category, tags, reading_time, level, media_type, media_content, media_filename } = body;
       
       // Vérifier que les champs nécessaires sont présents
       if (!title || !summary || !content || !category) {
@@ -479,7 +479,7 @@ export class InfoController {
         reading_time,
         level,
         media_type,
-        media_url,
+        media_content,
         media_filename
       }, tags || []);
       
@@ -586,7 +586,7 @@ export class InfoController {
       }
       
       const body = await req.json();
-      const { title, summary, content, category, tags, reading_time, level, media_type, media_url, media_filename } = body;
+      const { title, summary, content, category, tags, reading_time, level, media_type, media_content, media_filename } = body;
       
       // Vérifier que les champs nécessaires sont présents
       if (!title || !summary || !content || !category) {
@@ -607,7 +607,7 @@ export class InfoController {
         reading_time,
         level,
         media_type,
-        media_url,
+        media_content,
         media_filename
       }, tags || []);
       

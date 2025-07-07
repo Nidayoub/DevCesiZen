@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import MainLayout from '../../components/MainLayout';
@@ -73,13 +74,13 @@ export default function DashboardPage() {
             <div className="mt-4">
               <ul className="space-y-2">
                 <li className="text-indigo-600 hover:text-indigo-800">
-                  <a href="/info">Articles bien-être</a>
+                  <Link href="/info">Articles bien-être</Link>
                 </li>
                 <li className="text-indigo-600 hover:text-indigo-800">
-                  <a href="/info">Méditation guidée</a>
+                  <Link href="/info">Méditation guidée</Link>
                 </li>
                 <li className="text-indigo-600 hover:text-indigo-800">
-                  <a href="/info">Gestion du stress</a>
+                  <Link href="/info">Gestion du stress</Link>
                 </li>
               </ul>
             </div>
@@ -113,9 +114,9 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <a href="/info" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                    <Link href="/info" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                       Méditation guidée
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -129,9 +130,9 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <a href="/info" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                    <Link href="/info" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                       Articles bien-être
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -145,9 +146,9 @@ export default function DashboardPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <a href="/diagnostic" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                    <Link href="/diagnostic" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                       Historique des évaluations
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

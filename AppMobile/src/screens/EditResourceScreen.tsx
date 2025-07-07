@@ -77,10 +77,10 @@ const EditResourceScreen: React.FC<EditResourceScreenProps> = ({ route, navigati
         setLevel(resource.level || 'debutant');
         
         // Charger les données média si elles existent
-        if (resource.media_url) {
+        if (resource.media_content) {
           setMediaUpload({
             type: resource.media_type || 'image',
-            url: resource.media_url,
+            content: resource.media_content,
             filename: resource.media_filename || 'media'
           });
         }
@@ -136,7 +136,7 @@ const EditResourceScreen: React.FC<EditResourceScreenProps> = ({ route, navigati
         reading_time: readingTime || undefined,
         level,
         media_type: mediaUpload?.type || null,
-        media_url: mediaUpload?.url || null,
+        media_content: mediaUpload?.content || null,
         media_filename: mediaUpload?.filename || null
       };
 

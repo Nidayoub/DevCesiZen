@@ -11,7 +11,8 @@ import { EmotionReport } from '../../../types';
 // Nous utiliserons Chart.js pour les graphiques. Mais comme c'est un composant client,
 // il doit être importé dynamiquement pour éviter les erreurs SSR
 import dynamic from 'next/dynamic';
-const Chart = dynamic(() => import('react-chartjs-2'), { ssr: false });
+const Line = dynamic(() => import('react-chartjs-2').then((mod) => ({ default: mod.Line })), { ssr: false });
+const Doughnut = dynamic(() => import('react-chartjs-2').then((mod) => ({ default: mod.Doughnut })), { ssr: false });
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -285,14 +286,14 @@ export default function EmotionsReportPage() {
               {/* Graphique d'intensité des émotions */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="h-80">
-                  {lineChartData && <Chart type="line" data={lineChartData} options={lineChartOptions} />}
+                  {lineChartData && <Line data={lineChartData} options={lineChartOptions} />}
                 </div>
               </div>
               
               {/* Distribution des émotions */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="h-80">
-                  {pieChartData && <Chart type="doughnut" data={pieChartData} options={pieChartOptions} />}
+                  {pieChartData && <Doughnut data={pieChartData} options={pieChartOptions} />}
                 </div>
               </div>
               

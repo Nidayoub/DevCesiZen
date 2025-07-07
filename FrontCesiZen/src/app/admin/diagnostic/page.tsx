@@ -25,6 +25,14 @@ interface DiagnosticCategory {
   color?: string;
 }
 
+interface DiagnosticEvent {
+  id: number;
+  title?: string;
+  event_text?: string;
+  points?: number;
+  category_id?: number;
+}
+
 export default function AdminDiagnosticPage() {
   const [questions, setQuestions] = useState<DiagnosticQuestion[]>([]);
   const [diagnosticCategories, setDiagnosticCategories] = useState<DiagnosticCategory[]>([]);
@@ -42,51 +50,9 @@ export default function AdminDiagnosticPage() {
   const [newTitle, setNewTitle] = useState<string>('');
   const [newScore, setNewScore] = useState<number>(0);
   const [newCategoryId, setNewCategoryId] = useState<number | undefined>(undefined);
-  
-  // États pour les catégories
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<DiagnosticCategory | null>(null);
-  const [editedCategoryName, setEditedCategoryName] = useState<string>('');
-  const [editedCategoryDescription, setEditedCategoryDescription] = useState<string>('');
 
-  // Charger les catégories de diagnostic
-  const loadDiagnosticCategories = async () => {
-    try {
-      const response = await diagnosticCategoriesApi.getAll();
-      setDiagnosticCategories(response.data || []);
-    } catch (err) {
-      console.error('Erreur lors du chargement des catégories de diagnostic:', err);
-      setError('Impossible de charger les catégories de diagnostic');
-    }
-  };
 
-  // Charger les questions de diagnostic
-  const loadQuestions = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await diagnosticApi.getQuestions();
-      
-      // Le backend renvoie { events: [...] } avec title, points, category
-      const events = response.data?.events || [];
-      const fetched: DiagnosticQuestion[] = events.map((event: any) => ({
-        id: event.id,
-        title: event.title || event.event_text || '',
-        score: event.points || 0,
-        category_id: event.category_id || undefined,
-        // Associer la catégorie si elle existe
-        category: event.category_id ? diagnosticCategories.find(cat => cat.id === event.category_id) : undefined
-      }));
-      
-      setQuestions(fetched);
-      setLoading(false);
-    } catch (err) {
-      console.error('Erreur lors du chargement des questions:', err);
-      setError('Impossible de charger les questions de diagnostic. Veuillez réessayer.');
-      setLoading(false);
-    }
-  };
+
 
   // Grouper les questions par catégorie
   const getQuestionsByCategory = () => {
@@ -112,14 +78,41 @@ export default function AdminDiagnosticPage() {
     return grouped;
   };
 
+  // Fonction pour rafraîchir les données (pour le bouton)
+  const refreshData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Charger les catégories d'abord
+      const categoriesResponse = await diagnosticCategoriesApi.getAll();
+      const categories = categoriesResponse.data || [];
+      setDiagnosticCategories(categories);
+      
+      // Puis charger les questions avec les catégories associées
+      const questionsResponse = await diagnosticApi.getQuestions();
+      const events = questionsResponse.data?.events || [];
+      const fetched: DiagnosticQuestion[] = events.map((event: DiagnosticEvent) => ({
+        id: event.id,
+        title: event.title || event.event_text || '',
+        score: event.points || 0,
+        category_id: event.category_id || undefined,
+        category: event.category_id ? categories.find((cat: DiagnosticCategory) => cat.id === event.category_id) : undefined
+      }));
+      
+      setQuestions(fetched);
+      setLoading(false);
+    } catch (err) {
+      console.error('Erreur lors du chargement des données:', err);
+      setError('Impossible de charger les données. Veuillez réessayer.');
+      setLoading(false);
+    }
+  };
+
   // Charger automatiquement les données au chargement de la page
   useEffect(() => {
-    const loadData = async () => {
-      await loadDiagnosticCategories();
-      await loadQuestions();
-    };
-    loadData();
-  }, []);
+    refreshData();
+  }, []); // Aucune dépendance pour éviter les boucles
 
   // Modifier une question
   const handleUpdateQuestion = async () => {
@@ -275,84 +268,7 @@ export default function AdminDiagnosticPage() {
     setShowAddModal(true);
   };
 
-  // Fonctions pour gérer les catégories
-  const openAddCategoryModal = () => {
-    setIsAddingCategory(true);
-    setCategoryToEdit(null);
-    setEditedCategoryName('');
-    setEditedCategoryDescription('');
-    setShowCategoryModal(true);
-  };
 
-  const openEditCategoryModal = (category: DiagnosticCategory) => {
-    setIsAddingCategory(false);
-    setCategoryToEdit(category);
-    setEditedCategoryName(category.name);
-    setEditedCategoryDescription(category.description || '');
-    setShowCategoryModal(true);
-  };
-
-  const handleSaveCategory = async () => {
-    if (!editedCategoryName.trim()) {
-      toast.error('Le nom de la catégorie est requis');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      
-      if (isAddingCategory) {
-        // Ajouter une nouvelle catégorie
-        await diagnosticCategoriesApi.create({
-          name: editedCategoryName.trim(),
-          description: editedCategoryDescription.trim() || null,
-          icon: '📝', // Icône par défaut
-          color: '#6B7280' // Couleur par défaut
-        });
-        toast.success('Catégorie ajoutée avec succès');
-      } else if (categoryToEdit) {
-        // Modifier une catégorie existante
-        await diagnosticCategoriesApi.update(categoryToEdit.id, {
-          name: editedCategoryName.trim(),
-          description: editedCategoryDescription.trim() || null
-        });
-        toast.success('Catégorie modifiée avec succès');
-      }
-      
-      // Recharger les catégories
-      await loadDiagnosticCategories();
-      
-      // Fermer le modal
-      setShowCategoryModal(false);
-      setEditedCategoryName('');
-      setEditedCategoryDescription('');
-      setLoading(false);
-    } catch (err) {
-      console.error('Erreur lors de la sauvegarde de la catégorie:', err);
-      toast.error('Impossible de sauvegarder la catégorie');
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.')) {
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      await diagnosticCategoriesApi.delete(categoryId);
-      toast.success('Catégorie supprimée avec succès');
-      
-      // Recharger les catégories
-      await loadDiagnosticCategories();
-      setLoading(false);
-    } catch (err) {
-      console.error('Erreur lors de la suppression de la catégorie:', err);
-      toast.error('Impossible de supprimer la catégorie');
-      setLoading(false);
-    }
-  };
 
   return (
     <ProtectedRoute requiredRole="admin">
@@ -368,12 +284,12 @@ export default function AdminDiagnosticPage() {
                   <div className="sm:flex-auto">
                     <h1 className="text-xl font-semibold text-gray-900">Administration du Diagnostic</h1>
                     <p className="mt-2 text-sm text-gray-700">
-                      Gérez les questions et catégories utilisées dans l'échelle de stress de Holmes & Rahe
+                      Gérez les questions et catégories utilisées dans l&apos;échelle de stress de Holmes & Rahe
                     </p>
                   </div>
                   <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex space-x-2">
                     <button
-                      onClick={loadQuestions}
+                      onClick={refreshData}
                       disabled={loading}
                       className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
@@ -660,7 +576,7 @@ export default function AdminDiagnosticPage() {
                             placeholder="Entrez le titre de votre question..."
                             required
                           />
-                          <p className="mt-1 text-xs text-gray-500">Exemple: "Je me sens stressé(e) au travail"</p>
+                          <p className="mt-1 text-xs text-gray-500">Exemple: &quot;Je me sens stressé(e) au travail&quot;</p>
                         </div>
                         <div>
                           <label htmlFor="new-question-score" className="block text-sm font-medium text-gray-700 mb-2">
@@ -739,83 +655,7 @@ export default function AdminDiagnosticPage() {
           </div>
         )}
 
-        {/* Modal de gestion des catégories */}
-        {showCategoryModal && (
-          <div className="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="category-modal-title" role="dialog" aria-modal="true">
-            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-              <div 
-                className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-                aria-hidden="true"
-                onClick={() => setShowCategoryModal(false)}
-              ></div>
-              <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-              <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
-                      <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                      </svg>
-                    </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="category-modal-title">
-                        {isAddingCategory ? 'Ajouter une catégorie' : 'Modifier la catégorie'}
-                      </h3>
-                      <div className="mt-4 space-y-4">
-                        <div>
-                          <label htmlFor="category-name" className="block text-sm font-medium text-gray-700">
-                            Nom de la catégorie
-                          </label>
-                          <input
-                            type="text"
-                            id="category-name"
-                            name="category-name"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            value={editedCategoryName}
-                            onChange={(e) => setEditedCategoryName(e.target.value)}
-                            placeholder="Ex: Émotions, Travail, Familial..."
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="category-description" className="block text-sm font-medium text-gray-700">
-                            Description (optionnel)
-                          </label>
-                          <textarea
-                            id="category-description"
-                            name="category-description"
-                            rows={3}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                            value={editedCategoryDescription}
-                            onChange={(e) => setEditedCategoryDescription(e.target.value)}
-                            placeholder="Description de la catégorie..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button 
-                    type="button"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSaveCategory}
-                    disabled={loading || !editedCategoryName.trim()}
-                  >
-                    {loading ? 'Enregistrement...' : (isAddingCategory ? 'Ajouter' : 'Enregistrer')}
-                  </button>
-                  <button 
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => setShowCategoryModal(false)}
-                    disabled={loading}
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
       </MainLayout>
     </ProtectedRoute>
   );

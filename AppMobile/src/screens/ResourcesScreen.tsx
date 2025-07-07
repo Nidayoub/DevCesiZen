@@ -14,6 +14,7 @@ import { resourcesApi, infoResourcesApi } from '../services/api.service';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
 import COLORS from '../constants/colors';
+import ReportButton from '../components/ReportButton';
 
 type ResourcesScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Resources'>;
 
@@ -68,23 +69,33 @@ const ResourcesScreen: React.FC<ResourcesScreenProps> = ({ navigation }) => {
   }, []);
 
   const renderItem = ({ item }: { item: Resource }) => (
-    <TouchableOpacity 
-      style={styles.resourceItem} 
-      onPress={() => navigation.navigate('ResourceDetails', { id: item.id })}
-    >
-      <View style={styles.resourceHeader}>
-        <Text style={styles.resourceTitle}>{item.title}</Text>
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{item.category_name || item.category}</Text>
+    <View style={styles.resourceItem}>
+      <TouchableOpacity 
+        style={styles.resourceContent} 
+        onPress={() => navigation.navigate('ResourceDetails', { id: item.id })}
+      >
+        <View style={styles.resourceHeader}>
+          <Text style={styles.resourceTitle}>{item.title}</Text>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{item.category_name || item.category}</Text>
+          </View>
         </View>
+        <Text style={styles.resourceDescription} numberOfLines={2}>
+          {item.description || item.summary}
+        </Text>
+        <Text style={styles.dateText}>
+          {new Date(item.created_at || item.publication_date).toLocaleDateString('fr-FR')}
+        </Text>
+      </TouchableOpacity>
+      
+      <View style={styles.resourceActions}>
+        <ReportButton 
+          contentType="resource" 
+          contentId={item.id}
+          size="small"
+        />
       </View>
-      <Text style={styles.resourceDescription} numberOfLines={2}>
-        {item.description || item.summary}
-      </Text>
-      <Text style={styles.dateText}>
-        {new Date(item.created_at || item.publication_date).toLocaleDateString('fr-FR')}
-      </Text>
-    </TouchableOpacity>
+    </View>
   );
 
   if (loading && !refreshing) {
@@ -179,7 +190,6 @@ const styles = StyleSheet.create({
   resourceItem: {
     backgroundColor: '#ffffff',
     borderRadius: 8,
-    padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: '#4f46e5',
@@ -188,6 +198,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  resourceContent: {
+    flex: 1,
+    padding: 16,
+  },
+  resourceActions: {
+    padding: 8,
+    justifyContent: 'center',
   },
   resourceHeader: {
     flexDirection: 'row',

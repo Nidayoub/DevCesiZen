@@ -15,6 +15,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types/navigation';
 import { infoApi, infoResourcesApi } from '../services/api.service';
 import { useAuth } from '../context/AuthContext';
+import ReportButton from '../components/ReportButton';
 
 type InfoScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Info'>;
 
@@ -93,38 +94,48 @@ const InfoScreen: React.FC<InfoScreenProps> = ({ navigation }) => {
   };
 
   const renderItem = ({ item }: { item: InfoResource }) => (
-    <TouchableOpacity
-      style={styles.resourceCard}
-      onPress={() => navigation.navigate('InfoDetails', { id: item.id })}
-    >
-      {item.image_url && (
-        <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: item.image_url }} 
-            style={styles.resourceImage}
-            resizeMode="cover"
-          />
-        </View>
-      )}
-      
-      <View style={styles.resourceContent}>
-        <Text style={styles.resourceCategory}>{item.category_name}</Text>
-        <Text style={styles.resourceTitle}>{item.title}</Text>
-        <Text style={styles.resourceDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
+    <View style={styles.resourceCard}>
+      <TouchableOpacity
+        style={styles.resourceCardContent}
+        onPress={() => navigation.navigate('InfoDetails', { id: item.id })}
+      >
+        {item.image_url && (
+          <View style={styles.imageContainer}>
+            <Image 
+              source={{ uri: item.image_url }} 
+              style={styles.resourceImage}
+              resizeMode="cover"
+            />
+          </View>
+        )}
         
-        <View style={styles.resourceMeta}>
-          <Text style={styles.resourceDate}>
-            {new Date(item.created_at).toLocaleDateString('fr-FR')}
+        <View style={styles.resourceContent}>
+          <Text style={styles.resourceCategory}>{item.category_name}</Text>
+          <Text style={styles.resourceTitle}>{item.title}</Text>
+          <Text style={styles.resourceDescription} numberOfLines={2}>
+            {item.description}
           </Text>
-          <View style={styles.resourceStats}>
-            <Text style={styles.statText}>{item.views_count} vues</Text>
-            <Text style={styles.statText}>{item.likes_count} likes</Text>
+          
+          <View style={styles.resourceMeta}>
+            <Text style={styles.resourceDate}>
+              {new Date(item.created_at).toLocaleDateString('fr-FR')}
+            </Text>
+            <View style={styles.resourceStats}>
+              <Text style={styles.statText}>{item.views_count} vues</Text>
+              <Text style={styles.statText}>{item.likes_count} likes</Text>
+            </View>
           </View>
         </View>
+      </TouchableOpacity>
+      
+      <View style={styles.resourceActions}>
+        <ReportButton 
+          contentType="resource" 
+          contentId={item.id}
+          size="small"
+        />
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   if (loading && !refreshing) {
@@ -251,7 +262,6 @@ const styles = StyleSheet.create({
   resourceCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    overflow: 'hidden',
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
@@ -261,6 +271,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3.84,
     elevation: 2,
+  },
+  resourceCardContent: {
+    overflow: 'hidden',
+    borderRadius: 12,
+  },
+  resourceActions: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 4,
   },
   imageContainer: {
     height: 160,

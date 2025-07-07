@@ -8,6 +8,7 @@ const adminRoutes = [
   { name: 'Articles', path: '/admin/info-resources', icon: 'document-text' },
   { name: 'Diagnostic', path: '/admin/diagnostic', icon: 'chart-bar' },
   { name: 'Catégories', path: '/admin/categories', icon: 'tag' },
+  { name: 'Signalements', path: '/admin/reports', icon: 'flag' },
 ];
 
 export default function AdminMenu() {
@@ -45,6 +46,12 @@ export default function AdminMenu() {
         return (
           <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        );
+      case 'flag':
+        return (
+          <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6v1a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
           </svg>
         );
       default:

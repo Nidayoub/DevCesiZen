@@ -189,7 +189,7 @@ export default function AdminPage() {
                           Rôle
                         </th>
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                          Date d'inscription
+                          Date d&#39;inscription
                         </th>
                         <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                           <span className="sr-only">Actions</span>
@@ -296,7 +296,7 @@ export default function AdminPage() {
                       <h3 className="text-lg leading-6 font-medium text-gray-900" id="delete-modal-title">Confirmer la suppression</h3>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Êtes-vous sûr de vouloir supprimer l'utilisateur {userToDelete?.firstname} {userToDelete?.lastname} ? Cette action est irréversible.
+                          Êtes-vous sûr de vouloir supprimer l&#39;utilisateur {userToDelete?.firstname} {userToDelete?.lastname} ? Cette action est irréversible.
                         </p>
                       </div>
                     </div>
@@ -353,7 +353,7 @@ export default function AdminPage() {
                     </div>
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                       <h3 className="text-lg leading-6 font-medium text-gray-900" id="edit-modal-title">
-                        Modifier l'utilisateur
+                        Modifier l&#39;utilisateur
                       </h3>
                       <div className="mt-4">
                         <p className="text-sm text-gray-500 mb-4">

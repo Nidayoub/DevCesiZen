@@ -46,7 +46,7 @@ export interface InfoResource {
   comments_count?: number;
   tags?: string[];
   media_type?: 'image' | 'video' | null;
-  media_url?: string;
+  media_content?: string;
   media_filename?: string;
 }
 
@@ -325,7 +325,7 @@ export class InfoModel extends BaseModel<PageInfo> {
         `INSERT INTO info_resources (
           title, summary, content, category, author_id, 
           publication_date, modification_date, reading_time, level, views, shares,
-          media_type, media_url, media_filename
+          media_type, media_content, media_filename
         ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?, ?, 0, 0, ?, ?, ?)`,
         [
           resource.title, 
@@ -336,7 +336,7 @@ export class InfoModel extends BaseModel<PageInfo> {
           resource.reading_time,
           resource.level,
           resource.media_type || null,
-          resource.media_url || null,
+          resource.media_content || null,
           resource.media_filename || null
         ]
       );
@@ -375,7 +375,7 @@ export class InfoModel extends BaseModel<PageInfo> {
         `UPDATE info_resources
          SET title = ?, summary = ?, content = ?, category = ?,
              modification_date = datetime('now'), reading_time = ?, level = ?,
-             media_type = ?, media_url = ?, media_filename = ?
+             media_type = ?, media_content = ?, media_filename = ?
          WHERE id = ?`,
         [
           resource.title, 
@@ -385,7 +385,7 @@ export class InfoModel extends BaseModel<PageInfo> {
           resource.reading_time,
           resource.level,
           resource.media_type || null,
-          resource.media_url || null,
+          resource.media_content || null,
           resource.media_filename || null,
           id
         ]

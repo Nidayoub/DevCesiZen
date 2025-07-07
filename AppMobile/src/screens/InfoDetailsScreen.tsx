@@ -12,6 +12,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { infoResourcesApi } from '../services/api.service';
 import COLORS from '../constants/colors';
+import ReportButton from '../components/ReportButton';
 
 type InfoDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, 'InfoDetails'>;
 type InfoDetailsScreenRouteProp = RouteProp<RootStackParamList, 'InfoDetails'>;
@@ -101,6 +102,14 @@ const InfoDetailsScreen: React.FC<InfoDetailsScreenProps> = ({ navigation, route
           </View>
         </View>
         
+        <View style={styles.actions}>
+          <ReportButton 
+            contentType="resource" 
+            contentId={resource.id}
+            size="small"
+          />
+        </View>
+        
         <Text style={styles.description}>{resource.description}</Text>
         
         {resource.content && (
@@ -187,6 +196,10 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  actions: {
+    alignItems: 'flex-end',
+    marginBottom: 16,
   },
   description: {
     fontSize: 16,

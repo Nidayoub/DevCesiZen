@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Make sure API_URL uses the correct backend URL (port 3000)
-const API_URL = (process.env.NEXT_PUBLIC_API_URL)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 // Configuration de base d'Axios
 const api = axios.create({
@@ -11,6 +11,30 @@ const api = axios.create({
   },
   withCredentials: true // Toujours inclure les cookies pour toutes les requêtes
 });
+
+// Intercepteur pour ajouter le token d'authentification (fallback uniquement)
+api.interceptors.request.use(
+  (config) => {
+    // Ne pas ajouter de header Authorization car on utilise principalement les cookies
+    // Cet intercepteur est gardé pour compatibilité future si besoin
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Intercepteur pour gérer les erreurs de réponse
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Erreur d'authentification - les cookies sont gérés automatiquement par le navigateur
+      console.warn('Erreur d\'authentification - vérifiez votre connexion');
+    }
+    return Promise.reject(error);
+  }
+);
 
 // API des utilisateurs (admin)
 export const usersApi = {
@@ -92,6 +116,7 @@ export const diagnosticApi = {
   getQuestions: () => api.get('/api/diagnostic/questions'),
   submitDiagnostic: (data: any) => api.post('/api/diagnostic/submit', data),
   getUserHistory: () => api.get('/api/diagnostic/history'),
+  deleteDiagnostic: (id: number) => api.delete(`/api/diagnostic/history/${id}`),
   // Administration du diagnostic (admin uniquement)
   configureQuestions: (data: any) => api.post('/api/diagnostic/configure', data),
 };
@@ -121,42 +146,7 @@ export const emotionsApi = {
     api.get(`/api/emotions/report?period=${period}`),
 };
 
-// Ajouter l'API pour les exercices de respiration
-export const breathingApi = {
-  getAllExercises: async () => {
-    const response = await fetch(`${API_URL}/api/breathing`, {
-      credentials: 'include' // Inclure les cookies pour cette requête
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Failed to fetch breathing exercises and could not parse error response' }));
-      console.error('Error fetching breathing exercises:', errorData);
-      throw new Error(errorData.message || 'Failed to fetch breathing exercises');
-    }
-    return response.json();
-  },
-  getExerciseById: async (id: string | number) => {
-    const response = await fetch(`${API_URL}/api/breathing/${id}`, {
-      credentials: 'include' // Inclure les cookies pour cette requête
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: `Failed to fetch breathing exercise ${id} and could not parse error response` }));
-      console.error(`Error fetching breathing exercise ${id}:`, errorData);
-      throw new Error(errorData.message || `Failed to fetch breathing exercise ${id}`);
-    }
-    return response.json();
-  },
-  getExerciseTypes: async () => {
-    const response = await fetch(`${API_URL}/api/breathing/types`, {
-      credentials: 'include' // Inclure les cookies pour cette requête
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Failed to fetch breathing exercise types and could not parse error response' }));
-      console.error('Error fetching breathing exercise types:', errorData);
-      throw new Error(errorData.message || 'Failed to fetch breathing exercise types');
-    }
-    return response.json();
-  }
-};
+
 
 // API des médias
 export const mediaApi = {
@@ -169,6 +159,35 @@ export const mediaApi = {
       },
     });
   },
+};
+
+// API des signalements
+export const reportsApi = {
+  // Créer un signalement
+  create: (contentType: 'comment' | 'resource', contentId: number, reason: string, description?: string) =>
+    api.post('/api/reports', { content_type: contentType, content_id: contentId, reason, description }),
+  
+  // Vérifier si l'utilisateur a déjà signalé un contenu
+  checkReported: (contentType: 'comment' | 'resource', contentId: number) =>
+    api.get(`/api/reports/check?content_type=${contentType}&content_id=${contentId}`),
+  
+  // Administration (admin uniquement)
+  getAll: (status?: string) => {
+    const url = status ? `/api/reports?status=${status}` : '/api/reports';
+    return api.get(url);
+  },
+  
+  getById: (id: number) => api.get(`/api/reports/${id}`),
+  
+  updateStatus: (id: number, status: 'reviewed' | 'resolved' | 'dismissed') =>
+    api.put(`/api/reports/${id}/status`, { status }),
+  
+  delete: (id: number) => api.delete(`/api/reports/${id}`),
+  
+  getStatistics: () => api.get('/api/reports/statistics'),
+  
+  // Signalements de l'utilisateur
+  getUserReports: () => api.get('/api/reports/user'),
 };
 
 export default api; 

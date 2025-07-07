@@ -294,15 +294,20 @@ export class DiagnosticController {
         
         return {
           id: diagnostic.id,
-          score: diagnostic.total_score,
+          total_score: diagnostic.total_score, // Frontend s'attend à total_score
+          score: diagnostic.total_score, // Mobile s'attend à score
           stress_level: diagnostic.stress_level,
           interpretation: interpretation,
-          created_at: diagnostic.date,
+          date: diagnostic.date, // Frontend s'attend à date
+          created_at: diagnostic.date, // Mobile s'attend à created_at
           selected_events_count: eventIds.length
         };
       });
       
-      return new Response(JSON.stringify(formattedDiagnostics), {
+      // Retourner le format attendu par le frontend avec wrapper
+      return new Response(JSON.stringify({ 
+        diagnostics: formattedDiagnostics 
+      }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });

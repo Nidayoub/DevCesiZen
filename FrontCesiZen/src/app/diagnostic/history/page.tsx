@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import MainLayout from '../../../components/MainLayout';
 import { useAuth } from '../../../context/AuthContext';
 import { diagnosticApi } from '../../../services/api.service';
+import toast from 'react-hot-toast';
 
 interface DiagnosticHistoryEntry {
   id: number;
@@ -40,13 +41,14 @@ export default function DiagnosticHistoryPage() {
         try {
           const response = await diagnosticApi.getUserHistory();
           setHistory(response.data.diagnostics || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error("Erreur lors de la récupération de l'historique:", err);
-          if (err.response?.status === 401) {
+          const error = err as { response?: { status?: number }; message?: string };
+          if (error.response?.status === 401) {
             setError("Votre session a peut-être expiré. Veuillez vous reconnecter.");
             router.push('/login?redirect=/diagnostic/history');
           } else {
-            setError(err.message || "Impossible de charger l'historique des diagnostics.");
+            setError(error.message || "Impossible de charger l&#39;historique des diagnostics.");
           }
         } finally {
           setLoading(false);
@@ -62,6 +64,28 @@ export default function DiagnosticHistoryPage() {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
+  };
+
+  const handleDeleteDiagnostic = async (id: number, stressLevel: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ce diagnostic ?\n\nNiveau de stress: ${stressLevel}`)) {
+      return;
+    }
+
+    try {
+      await diagnosticApi.deleteDiagnostic(id);
+      // Mettre à jour la liste en supprimant l'élément
+      setHistory(prev => prev.filter(diagnostic => diagnostic.id !== id));
+      toast.success('Diagnostic supprimé avec succès');
+    } catch (err: unknown) {
+      console.error('Erreur lors de la suppression:', err);
+      const error = err as { response?: { status?: number }; message?: string };
+      if (error.response?.status === 401) {
+        toast.error('Votre session a peut-être expiré. Veuillez vous reconnecter.');
+        router.push('/login?redirect=/diagnostic/history');
+      } else {
+        toast.error('Impossible de supprimer le diagnostic');
+      }
+    }
   };
 
   if (!authCheckComplete) {
@@ -84,7 +108,7 @@ export default function DiagnosticHistoryPage() {
               Retrouvez ici vos précédents résultats de diagnostic de stress.
             </p>
           </div>
-          <Link href="/diagnostic/create" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+          <Link href="/diagnostic" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
             Nouveau diagnostic
           </Link>
         </div>
@@ -115,7 +139,7 @@ export default function DiagnosticHistoryPage() {
             </svg>
             <h3 className="mt-2 text-xl font-medium text-gray-900">Aucun diagnostic trouvé</h3>
             <p className="mt-1 text-gray-500">
-              Vous n'avez pas encore de diagnostic enregistré dans votre historique.
+              Vous n&#39;avez pas encore de diagnostic enregistré dans votre historique.
             </p>
             <Link href="/diagnostic" className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
               Faire un nouveau diagnostic
@@ -137,11 +161,22 @@ export default function DiagnosticHistoryPage() {
             {history.map((entry) => (
               <div key={entry.id} className="bg-white shadow-lg rounded-lg overflow-hidden">
                 <div className={`p-5 border-l-8 ${entry.stress_level.toLowerCase().includes('faible') ? 'border-green-500' : entry.stress_level.toLowerCase().includes('modéré') ? 'border-orange-500' : 'border-red-500'}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                      Score : <span className="text-indigo-600">{entry.total_score}</span> - {entry.stress_level}
-                    </h2>
-                    <p className="text-sm text-gray-500">{formatDate(entry.date)}</p>
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h2 className="text-xl font-semibold text-gray-800">
+                        Score : <span className="text-indigo-600">{entry.total_score}</span> - {entry.stress_level}
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">{formatDate(entry.date)}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteDiagnostic(entry.id, entry.stress_level)}
+                      className="ml-4 p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors duration-200"
+                      title="Supprimer ce diagnostic"
+                    >
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>

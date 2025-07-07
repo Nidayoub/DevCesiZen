@@ -3,7 +3,7 @@
 import { LoginCredentials, RegisterData, User } from '../types/user';
 
 // Make sure API_URL uses the correct backend URL (port 3000) with no /api at the end
-const API_URL = (process.env.NEXT_PUBLIC_API_URL)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 class AuthService {
   private static instance: AuthService;

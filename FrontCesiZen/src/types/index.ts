@@ -58,17 +58,17 @@ export interface InfoResource {
   comments_count?: number;
   tags?: string[];
   media_type?: 'image' | 'video' | null;
-  media_url?: string;
+  media_content?: string;
   media_filename?: string;
 }
 
 // Type de média uploadé
 export interface MediaUpload {
   type: 'image' | 'video';
-  url: string;
+  content: string;
   filename: string;
-  originalName: string;
-  size: number;
+  originalName?: string;
+  size?: number;
 }
 
 // Type d'événement de stress

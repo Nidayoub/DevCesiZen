@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import MainLayout from '../../components/MainLayout';
 import { diagnosticApi } from '../../services/api.service';
 import { StressEvent, DiagnosticResult } from '../../types';
-import { useRouter } from 'next/navigation';
+
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
@@ -30,13 +30,12 @@ export default function DiagnosticPage() {
   const [progress, setProgress] = useState(0);
   const [transition, setTransition] = useState(false);
   const [savedToAccount, setSavedToAccount] = useState(false);
-  const { isAuthenticated, user } = useAuth();
-  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
-  // State for dynamic recommendations
-  const [dynamicRecommendations, setDynamicRecommendations] = useState<DynamicRecommendation[]>([]);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [errorRecommendations, setErrorRecommendations] = useState<string | null>(null);
+  // State for dynamic recommendations (commented out until backend is ready)
+  // const [dynamicRecommendations, setDynamicRecommendations] = useState<DynamicRecommendation[]>([]);
+  // const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  // const [errorRecommendations, setErrorRecommendations] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchStressEvents() {
@@ -84,6 +83,8 @@ export default function DiagnosticPage() {
   }, [currentCategory, categories]);
 
   // Fetch dynamic recommendations when diagnosticResult is available
+  // TODO: Uncomment when backend endpoint is ready
+  /*
   useEffect(() => {
     if (diagnosticResult && diagnosticResult.stress_level) {
       const fetchRecommendations = async () => {
@@ -91,33 +92,28 @@ export default function DiagnosticPage() {
         setErrorRecommendations(null);
         setDynamicRecommendations([]); // Clear previous recommendations
         try {
-          // TODO: UNCOMMENT AND USE ACTUAL API CALL WHEN BACKEND ENDPOINT IS READY
-          /*
           const response = await recommendationsApi.getRecommendations({
             stressLevel: diagnosticResult.stress_level,
-            // potentially add other parameters like selectedEventIds: selectedEvents if your API uses them
-            limit: 3 // example limit
+            limit: 3
           });
           if (response && response.data && Array.isArray(response.data.recommendations)) {
             setDynamicRecommendations(response.data.recommendations);
           } else {
             setDynamicRecommendations([]);
           }
-          */
-          console.log('Skipping recommendations fetch: Backend endpoint not implemented yet.');
-          // For now, dynamicRecommendations will remain empty, and fallback will be used.
-
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error("Failed to load dynamic recommendations:", err);
-          setErrorRecommendations(err.message || "Impossible de charger les recommandations personnalisées.");
-          setDynamicRecommendations([]); // Ensure it's empty on error
+          const error = err as { message?: string };
+          setErrorRecommendations(error.message || "Impossible de charger les recommandations personnalisées.");
+          setDynamicRecommendations([]);
         } finally {
           setLoadingRecommendations(false);
         }
       };
       fetchRecommendations();
     }
-  }, [diagnosticResult]); // Removed selectedEvents from dependency array as it might cause too many refetches
+  }, [diagnosticResult]);
+  */
 
   const handleEventToggle = (eventId: number) => {
     setSelectedEvents(prev => {
@@ -163,7 +159,7 @@ export default function DiagnosticPage() {
     }
 
     if (!isAuthenticated) {
-      setError("Vous n\'êtes pas authentifié. Veuillez vous connecter et réessayer.");
+      setError("Vous n&#39;êtes pas authentifié. Veuillez vous connecter et réessayer.");
       setLoading(false); // Assurez-vous que l'état de chargement est réinitialisé
       return; // Arrêter l'exécution ici
     }
@@ -171,7 +167,7 @@ export default function DiagnosticPage() {
     try {
       setLoading(true); // Maintenant, nous pouvons mettre loading à true
       setShowResults(false);
-      setDynamicRecommendations([]);
+      // setDynamicRecommendations([]);  // Commented out until backend is ready
       setError(''); // Réinitialiser les erreurs précédentes
       setSavedToAccount(false);
       
@@ -187,10 +183,11 @@ export default function DiagnosticPage() {
       if (isAuthenticated && response.data.resultId) {
         setSavedToAccount(true);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur lors de la soumission du diagnostic:', err);
       // Tenter de récupérer le message d'erreur du backend s'il existe
-      const backendError = err.response?.data?.error || 'Erreur lors de la soumission du diagnostic. Veuillez réessayer.';
+      const error = err as { response?: { data?: { error?: string } } };
+      const backendError = error.response?.data?.error || 'Erreur lors de la soumission du diagnostic. Veuillez réessayer.';
       setError(backendError);
     } finally {
       setLoading(false);
@@ -246,19 +243,19 @@ export default function DiagnosticPage() {
           <h4 className="font-semibold text-green-800 mb-2">🔗 Ressources utiles :</h4>
           <ul className="space-y-2">
             <li>
-              <a href="/info" className="text-green-600 hover:text-green-800 underline flex items-center">
-                <span className="mr-2">→</span> Exercices de respiration guidée
-              </a>
-            </li>
-            <li>
-              <a href="/info" className="text-green-600 hover:text-green-800 underline flex items-center">
+              <Link href="/info" className="text-green-600 hover:text-green-800 underline flex items-center">
                 <span className="mr-2">→</span> Astuces pour éviter le stress latent
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/info" className="text-green-600 hover:text-green-800 underline flex items-center">
+              <Link href="/info" className="text-green-600 hover:text-green-800 underline flex items-center">
                 <span className="mr-2">→</span> Prendre soin de sa santé mentale
-              </a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/info" className="text-green-600 hover:text-green-800 underline flex items-center">
+                <span className="mr-2">→</span> Techniques de relaxation
+              </Link>
             </li>
           </ul>
         </div>
@@ -277,26 +274,26 @@ export default function DiagnosticPage() {
           <h4 className="font-semibold text-orange-800 mb-2">🧘‍♂️ Recommandations :</h4>
           <ul className="list-disc pl-6 text-orange-700 mb-4 space-y-2">
             <li>Faites des pauses dans votre journée, même brèves.</li>
-            <li>Essayez un exercice de cohérence cardiaque dès maintenant.</li>
+            <li>Pratiquez la méditation ou des techniques de relaxation.</li>
             <li>Parlez à une personne de confiance de ce que vous ressentez.</li>
           </ul>
 
           <h4 className="font-semibold text-orange-800 mb-2">🔗 À consulter maintenant :</h4>
           <ul className="space-y-2">
             <li>
-              <a href="/info" className="text-orange-600 hover:text-orange-800 underline flex items-center">
-                <span className="mr-2">→</span> Mini guide pour apaiser l'esprit
-              </a>
+              <Link href="/info" className="text-orange-600 hover:text-orange-800 underline flex items-center">
+                <span className="mr-2">→</span> Mini guide pour apaiser l&#39;esprit
+              </Link>
             </li>
             <li>
-              <a href="/info" className="text-orange-600 hover:text-orange-800 underline flex items-center">
-                <span className="mr-2">→</span> Exercice de respiration 7-4-8
-              </a>
+              <Link href="/info" className="text-orange-600 hover:text-orange-800 underline flex items-center">
+                <span className="mr-2">→</span> Techniques de relaxation rapides
+              </Link>
             </li>
             <li>
-              <a href="/info" className="text-orange-600 hover:text-orange-800 underline flex items-center">
+              <Link href="/info" className="text-orange-600 hover:text-orange-800 underline flex items-center">
                 <span className="mr-2">→</span> Trouvez un professionnel à contacter
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -309,12 +306,12 @@ export default function DiagnosticPage() {
           </h3>
           <p className="text-red-700 mb-4">
             Il est probable que vous ressentiez une pression ou une charge émotionnelle importante.
-            Vous n'êtes pas seul·e, et il est essentiel d'agir.
+            Vous n&#39;êtes pas seul·e, et il est essentiel d&#39;agir.
           </p>
 
-          <h4 className="font-semibold text-red-800 mb-2">🧠 Ce que vous pouvez faire dès aujourd'hui :</h4>
+          <h4 className="font-semibold text-red-800 mb-2">🧠 Ce que vous pouvez faire dès aujourd&#39;hui :</h4>
           <ul className="list-disc pl-6 text-red-700 mb-4 space-y-2">
-            <li>Essayez un exercice de respiration profonde.</li>
+            <li>Prenez quelques minutes pour vous détendre et vous recentrer.</li>
             <li>Notez vos émotions dans un journal (ou utilisez le tracker).</li>
             <li>Contactez un professionnel ou un service d'écoute.</li>
           </ul>
@@ -322,19 +319,19 @@ export default function DiagnosticPage() {
           <h4 className="font-semibold text-red-800 mb-2">🔗 Ressources immédiates :</h4>
           <ul className="space-y-2">
             <li>
-              <a href="/info" className="text-red-600 hover:text-red-800 underline flex items-center">
-                <span className="mr-2">→</span> Respiration guidée en 5 minutes
-              </a>
+              <Link href="/info" className="text-red-600 hover:text-red-800 underline flex items-center">
+                <span className="mr-2">→</span> Techniques de relaxation rapides
+              </Link>
             </li>
             <li>
               <a href="tel:3114" className="text-red-600 hover:text-red-800 underline flex items-center">
-                <span className="mr-2">→</span> Numéro d'écoute anonyme : 3114 (Suicide Écoute)
+                <span className="mr-2">→</span> Numéro d&#39;écoute anonyme : 3114 (Suicide Écoute)
               </a>
             </li>
             <li>
-              <a href="/info" className="text-red-600 hover:text-red-800 underline flex items-center">
+              <Link href="/info" className="text-red-600 hover:text-red-800 underline flex items-center">
                 <span className="mr-2">→</span> Annuaire des psychologues
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -351,14 +348,14 @@ export default function DiagnosticPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-3xl font-bold text-gray-900">Diagnostic de stress</h1>
             <p className="mt-2 text-lg text-gray-600">
-              Évaluez votre niveau de stress selon l'échelle de Holmes et Rahe
+              Évaluez votre niveau de stress selon l&#39;échelle de Holmes et Rahe
             </p>
             {isAuthenticated && (
               <div className="mt-4 space-x-4">
                 <Link href="/diagnostic/history" className="text-indigo-600 hover:text-indigo-800 border border-indigo-300 rounded-md px-4 py-2 text-sm font-medium">
                   Voir mon historique
                 </Link>
-                <Link href="/diagnostic/create" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium">
+                                  <Link href="/diagnostic" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium">
                   Créer un diagnostic
                 </Link>
               </div>
@@ -423,7 +420,7 @@ export default function DiagnosticPage() {
                     <p className="text-indigo-700">
                       {savedToAccount 
                         ? "✅ Ce diagnostic a été enregistré dans votre compte." 
-                        : "⚠️ Ce diagnostic n'a pas pu être enregistré dans votre compte."}
+                        : "⚠️ Ce diagnostic n&#39;a pas pu être enregistré dans votre compte."}
                     </p>
                     <p className="text-sm text-indigo-600 mt-1">
                       {savedToAccount 

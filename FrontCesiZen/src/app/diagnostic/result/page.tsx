@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '../../../components/MainLayout';
-import { diagnosticApi } from '../../../services/api.service';
+// import { diagnosticApi } from '../../../services/api.service';
 import { DiagnosticResult, StressEvent } from '../../../types';
 
-export default function DiagnosticResultPage() {
+// Composant qui utilise useSearchParams, enveloppé dans Suspense
+function DiagnosticResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [result, setResult] = useState<DiagnosticResult | null>(null);
@@ -133,11 +134,11 @@ export default function DiagnosticResultPage() {
       ];
     } else if (stressLevel.includes('modéré')) {
       return [
-        "Essayez d'identifier les sources de votre stress et agissez sur celles que vous pouvez contrôler",
+        "Essayez d&#39;identifier les sources de votre stress et agissez sur celles que vous pouvez contrôler",
         "Intégrez des exercices de relaxation quotidiens (3-5 minutes, 2-3 fois par jour)",
         "Améliorez votre hygiène de sommeil (horaires réguliers, routine de coucher, pas d'écrans)",
         "Considérez de parler à un proche ou un professionnel de vos sources de stress",
-        "L'exercice physique régulier peut significativement réduire votre niveau de stress"
+        "L&#39;exercice physique régulier peut significativement réduire votre niveau de stress"
       ];
     } else if (stressLevel.includes('élevé')) {
       return [
@@ -252,7 +253,7 @@ export default function DiagnosticResultPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold leading-tight text-gray-900">Résultats de votre diagnostic de stress</h1>
             <p className="mt-2 text-lg text-gray-600">
-              Basé sur l'échelle scientifique de Holmes et Rahe
+              Basé sur l&#39;échelle scientifique de Holmes et Rahe
             </p>
           </div>
         </header>
@@ -296,7 +297,7 @@ export default function DiagnosticResultPage() {
                 </div>
                 <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
                   <p className="text-base text-gray-700">
-                    L'échelle de Holmes et Rahe est un outil scientifique qui mesure l'impact des événements de vie sur votre niveau de stress. Chaque événement a un poids spécifique en points qui reflète son impact potentiel sur votre santé.
+                    L&#39;échelle de Holmes et Rahe est un outil scientifique qui mesure l&#39;impact des événements de vie sur votre niveau de stress. Chaque événement a un poids spécifique en points qui reflète son impact potentiel sur votre santé.
                   </p>
                   <div className="mt-4 p-4 rounded-md bg-blue-50">
                     <div className="flex">
@@ -377,7 +378,7 @@ export default function DiagnosticResultPage() {
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg font-medium text-indigo-800">Prochaines étapes</h3>
                   <div className="mt-2 max-w-xl text-sm text-indigo-600">
-                    <p>Découvrez d'autres ressources et outils pour vous aider à gérer votre stress.</p>
+                    <p>Découvrez d&#39;autres ressources et outils pour vous aider à gérer votre stress.</p>
                   </div>
                   <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
@@ -414,5 +415,48 @@ export default function DiagnosticResultPage() {
         </main>
       </div>
     </MainLayout>
+  );
+}
+
+// Composant de chargement
+function DiagnosticResultLoading() {
+  return (
+    <MainLayout>
+      <div className="py-10">
+        <header>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">Résultats de votre diagnostic de stress</h1>
+            <p className="mt-2 text-lg text-gray-600">
+              Chargement de vos résultats...
+            </p>
+          </div>
+        </header>
+
+        <main>
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="px-4 py-8 sm:px-0">
+              <div className="flex justify-center items-center h-64">
+                <div className="text-center">
+                  <svg className="animate-spin h-12 w-12 text-indigo-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p className="text-gray-600">Chargement de vos résultats...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </MainLayout>
+  );
+}
+
+// Composant principal avec Suspense
+export default function DiagnosticResultPage() {
+  return (
+    <Suspense fallback={<DiagnosticResultLoading />}>
+      <DiagnosticResultContent />
+    </Suspense>
   );
 } 

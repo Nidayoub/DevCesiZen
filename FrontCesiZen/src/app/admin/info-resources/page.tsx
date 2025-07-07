@@ -41,7 +41,6 @@ export default function AdminInfoResourcesPage() {
   const [sortBy, setSortBy] = useState('publication_date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedResources, setSelectedResources] = useState<number[]>([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
 
   // États pour la pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,8 +148,12 @@ export default function AdminInfoResourcesPage() {
 
     // Trier
     filtered.sort((a, b) => {
-      let aValue: any = a[sortBy as keyof InfoResource];
-      let bValue: any = b[sortBy as keyof InfoResource];
+      const rawAValue = a[sortBy as keyof InfoResource];
+      const rawBValue = b[sortBy as keyof InfoResource];
+      
+      // Convertir en valeurs comparables, en excluant les arrays
+      let aValue: string | number | Date = Array.isArray(rawAValue) ? rawAValue.join(',') : (rawAValue || '');
+      let bValue: string | number | Date = Array.isArray(rawBValue) ? rawBValue.join(',') : (rawBValue || '');
 
       if (sortBy === 'publication_date') {
         aValue = new Date(aValue);
@@ -248,7 +251,6 @@ export default function AdminInfoResourcesPage() {
       await Promise.all(selectedResources.map(id => infoResourcesApi.delete(id)));
       setResources(resources.filter(resource => !selectedResources.includes(resource.id)));
       setSelectedResources([]);
-      setShowBulkActions(false);
       setIsDeleting(false);
       toast.success(`${count} ressource(s) supprimée(s) avec succès`);
     } catch (err) {
@@ -277,7 +279,7 @@ export default function AdminInfoResourcesPage() {
       const pages = [];
       const maxVisiblePages = 5;
       let startPage = Math.max(1, paginationInfo.currentPage - Math.floor(maxVisiblePages / 2));
-      let endPage = Math.min(paginationInfo.totalPages, startPage + maxVisiblePages - 1);
+      const endPage = Math.min(paginationInfo.totalPages, startPage + maxVisiblePages - 1);
 
       if (endPage - startPage + 1 < maxVisiblePages) {
         startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -370,7 +372,7 @@ export default function AdminInfoResourcesPage() {
               <div className="bg-white shadow rounded-lg p-6">
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h1 className="text-xl font-semibold text-gray-900">Gestion des ressources d'information</h1>
+                    <h1 className="text-xl font-semibold text-gray-900">Gestion des ressources d&#39;information</h1>
                     <p className="mt-2 text-sm text-gray-700">
                       Gérez le contenu éducatif et informatif de la plateforme
                     </p>
@@ -521,7 +523,7 @@ export default function AdminInfoResourcesPage() {
                   </div>
                 ) : resources.length === 0 ? (
                   <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center">
-                    <p className="text-gray-500">Aucune ressource d'information disponible</p>
+                    <p className="text-gray-500">Aucune ressource d&#39;information disponible</p>
                     <p className="mt-2 text-sm text-gray-500">Commencez par créer votre première ressource</p>
                   </div>
                 ) : (
