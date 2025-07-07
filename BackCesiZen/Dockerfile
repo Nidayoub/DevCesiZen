@@ -11,9 +11,6 @@ RUN bun install
 # Copier le code source
 COPY . .
 
-# Créer le répertoire de données pour la base de données
-RUN mkdir -p /app/data
-
 COPY .env* ./
 
 # Exposer le port utilisé par l'application
