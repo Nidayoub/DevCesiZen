@@ -286,6 +286,9 @@ export async function initDatabase() {
       level TEXT,
       views INTEGER DEFAULT 0,
       shares INTEGER DEFAULT 0,
+      media_type TEXT,
+      media_content TEXT,
+      media_filename TEXT,
       FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
@@ -331,6 +334,26 @@ export async function initDatabase() {
       comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (info_resource_id) REFERENCES info_resources(id) ON DELETE CASCADE,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  // Table reports (signalements de contenu)
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content_type TEXT NOT NULL CHECK (content_type IN ('comment', 'resource')),
+      content_id INTEGER NOT NULL,
+      reported_by INTEGER NOT NULL,
+      reason TEXT NOT NULL,
+      description TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'dismissed')),
+      reviewed_by INTEGER,
+      reviewed_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+      UNIQUE(content_type, content_id, reported_by)
     )
   `);
 
@@ -384,6 +407,30 @@ export async function initDatabase() {
   }
 
   console.log('📦 Tables initialisées avec succès');
+  
+  // MIGRATION: Ajouter les colonnes media à info_resources si elles n'existent pas
+  try {
+    // Vérifier si les colonnes existent déjà
+    const tableInfo = await db.query(`PRAGMA table_info(info_resources)`);
+    const columns = tableInfo.map((col: any) => col.name);
+    
+    if (!columns.includes('media_type')) {
+      await db.execute(`ALTER TABLE info_resources ADD COLUMN media_type TEXT`);
+      console.log('📦 Colonne media_type ajoutée à info_resources');
+    }
+    
+    if (!columns.includes('media_content')) {
+      await db.execute(`ALTER TABLE info_resources ADD COLUMN media_content TEXT`);
+      console.log('📦 Colonne media_content ajoutée à info_resources');
+    }
+    
+    if (!columns.includes('media_filename')) {
+      await db.execute(`ALTER TABLE info_resources ADD COLUMN media_filename TEXT`);
+      console.log('📦 Colonne media_filename ajoutée à info_resources');
+    }
+  } catch (error) {
+    console.log('📦 Colonnes media déjà présentes ou erreur de migration:', error);
+  }
   
   // Vérifier et initialiser les événements de stress s'ils n'existent pas
   const stressEventsCount = await db.queryOne('SELECT COUNT(*) as count FROM stress_events');

@@ -2,10 +2,25 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import MainLayout from '../../../../components/MainLayout';
 import AdminMenu from '../../../../components/AdminMenu';
 import { infoResourcesApi, mediaApi } from '../../../../services/api.service';
 import { ProtectedRoute } from '../../../../components/ProtectedRoute';
+
+interface InfoResourcePayload {
+  title: string;
+  summary: string;
+  content: string;
+  category?: string;
+  reading_time?: string;
+  level: string;
+  publication_date: string;
+  tags?: string[];
+  media_type: string | null;
+  media_content: string | null;
+  media_filename: string | null;
+}
 
 export default function CreateInfoResourcePage() {
   const router = useRouter();
@@ -26,7 +41,7 @@ export default function CreateInfoResourcePage() {
 
   const categories = [
     { value: 'gestion-stress', label: 'Gestion du stress', icon: '🧘' },
-    { value: 'respiration', label: 'Respiration', icon: '💨' },
+
     { value: 'meditation', label: 'Méditation', icon: '🧘‍♀️' },
     { value: 'sommeil', label: 'Sommeil', icon: '😴' },
     { value: 'nutrition', label: 'Nutrition', icon: '🥗' },
@@ -154,7 +169,7 @@ export default function CreateInfoResourcePage() {
       return;
     }
 
-    const payload: any = {
+    const payload: InfoResourcePayload = {
       title,
       summary,
       content,
@@ -169,7 +184,7 @@ export default function CreateInfoResourcePage() {
             .filter(Boolean)
         : undefined,
       media_type: mediaUpload?.type || null,
-      media_url: mediaUpload?.url || null,
+              media_content: mediaUpload?.content || null,
       media_filename: mediaUpload?.filename || null,
     };
 
@@ -432,7 +447,7 @@ Vous pouvez utiliser le Markdown pour formater votre texte :
                           value={tags}
                           onChange={(e) => setTags(e.target.value)}
                           className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 shadow-sm transition-all duration-200"
-                          placeholder="ex: stress, respiration, débutant"
+                          placeholder="ex: stress, meditation, débutant"
                         />
                         {tags && (
                           <div className="flex flex-wrap gap-2 mt-2">
@@ -529,11 +544,12 @@ Vous pouvez utiliser le Markdown pour formater votre texte :
                             {/* Aperçu du média */}
                             <div className="max-w-md mx-auto">
                               {mediaUpload.type === 'image' && (
-                                <div className="rounded-lg overflow-hidden">
-                                  <img 
+                                <div className="rounded-lg overflow-hidden relative w-full h-48">
+                                  <Image 
                                     src={mediaUpload.url} 
                                     alt="Aperçu"
-                                    className="w-full h-48 object-cover"
+                                    fill
+                                    className="object-cover"
                                   />
                                 </div>
                               )}

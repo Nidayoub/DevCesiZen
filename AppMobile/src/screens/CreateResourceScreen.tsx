@@ -124,7 +124,7 @@ const CreateResourceScreen: React.FC<CreateResourceScreenProps> = ({ navigation 
         reading_time: readingTime || undefined,
         level,
         media_type: mediaUpload?.type || null,
-        media_url: mediaUpload?.url || null,
+        media_content: mediaUpload?.content || null,
         media_filename: mediaUpload?.filename || null
       };
 

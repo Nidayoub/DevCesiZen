@@ -10,10 +10,20 @@ import { UserModel } from "../models/User";
  */
 export async function authMiddleware(req: Request): Promise<Response | null> {
   try {
-    // Vérifier si un cookie de session est présent
-    const cookies = req.headers.get("Cookie") || "";
-    const parsedCookies = parse(cookies);
-    const token = parsedCookies.authToken;
+    let token: string | undefined;
+    
+    // Vérifier d'abord le header Authorization
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    }
+    
+    // Si pas de header Authorization, vérifier les cookies
+    if (!token) {
+      const cookies = req.headers.get("Cookie") || "";
+      const parsedCookies = parse(cookies);
+      token = parsedCookies.authToken;
+    }
     
     if (!token) {
       return new Response(JSON.stringify({ 

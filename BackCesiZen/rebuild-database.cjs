@@ -241,6 +241,32 @@ db.serialize(() => {
       console.log('✅ Table info_resources_comments créée');
     });
 
+    // Table reports (signalements de contenu)
+    db.run(`
+      CREATE TABLE reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content_type TEXT NOT NULL CHECK (content_type IN ('comment', 'resource')),
+        content_id INTEGER NOT NULL,
+        reported_by INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        description TEXT,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'dismissed')),
+        reviewed_by INTEGER,
+        reviewed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (reported_by) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+        UNIQUE(content_type, content_id, reported_by)
+      )
+    `, (err) => {
+      if (err) {
+        console.error('❌ Erreur lors de la création de la table reports:', err.message);
+        throw err;
+      }
+      console.log('✅ Table reports créée');
+    });
+
     // Créer un utilisateur admin par défaut avec le mot de passe hashé (admin123)
     const adminPassword = bcrypt.hashSync('admin123', 10);
     

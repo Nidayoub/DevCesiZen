@@ -11,6 +11,7 @@ import { commentRoutes } from './commentRoutes';
 import { favoriteRoutes } from './favoriteRoutes';
 import { emotionRoutes } from './emotionRoutes';
 import { recommendationRoutes } from './recommendationRoutes';
+import { reportRoutes } from './reportRoutes';
 
 // Fonction qui gère le routage global
 export async function router(req: Request): Promise<Response> {
@@ -202,6 +203,11 @@ export async function router(req: Request): Promise<Response> {
     // Routes de recommandations (AJOUT)
     if (path.startsWith('/api/recommendations')) {
       return recommendationRoutes(req);
+    }
+
+    // Routes de signalements
+    if (path.startsWith('/api/reports')) {
+      return reportRoutes(req);
     }
 
     // Routes pour les médias

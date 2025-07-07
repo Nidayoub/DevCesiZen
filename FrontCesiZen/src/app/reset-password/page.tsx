@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/services/auth.service';
 
-export default function ResetPassword() {
+// Composant qui utilise useSearchParams, enveloppé dans Suspense
+function ResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetParams, setResetParams] = useState<{
@@ -185,5 +186,28 @@ export default function ResetPassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Composant de chargement
+function ResetPasswordLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Composant principal avec Suspense
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<ResetPasswordLoading />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 } 

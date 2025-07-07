@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 
 const API_URL = Platform.select({
   android: 'http://10.0.2.2:3000',
-  ios: 'https://6b23-2001-861-5581-3540-7cb7-827e-e813-6d44.ngrok-free.app',
+  ios: 'https://d406-2a02-8440-9124-d860-a16c-de70-c931-320c.ngrok-free.app',
   default: 'http://localhost:3000'
 });
 

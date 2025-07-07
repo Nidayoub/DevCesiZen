@@ -16,17 +16,17 @@ export interface InfoResource {
   comments_count?: number;
   tags?: string[];
   media_type?: 'image' | 'video' | null;
-  media_url?: string;
+  media_content?: string;
   media_filename?: string;
 }
 
 // Interface pour les médias uploadés
 export interface MediaUpload {
   type: 'image' | 'video';
-  url: string;
+  content: string;
   filename: string;
-  originalName: string;
-  size: number;
+  originalName?: string;
+  size?: number;
 }
 
 // Interface pour les catégories

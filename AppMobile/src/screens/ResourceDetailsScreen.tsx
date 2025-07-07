@@ -18,6 +18,7 @@ import { RootStackParamList } from '../types/navigation';
 import { infoResourcesApi } from '../services/api.service';
 import { useAuth } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import ReportButton from '../components/ReportButton';
 
 type ResourceDetailsRouteProp = RouteProp<RootStackParamList, 'ResourceDetails'>;
 
@@ -45,7 +46,7 @@ interface Resource {
   tags: string[];
   author_id: number;
   media_type?: string;
-  media_url?: string;
+  media_content?: string;
   media_filename?: string;
 }
 
@@ -476,11 +477,11 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
       </View>
       
       {/* Media Display */}
-      {resource.media_url && (
+      {resource.media_content && (
         <View style={styles.mediaContainer}>
           {resource.media_type === 'image' ? (
             <Image
-              source={{ uri: resource.media_url }}
+              source={{ uri: resource.media_content }}
               style={styles.mediaImage}
               resizeMode="cover"
             />
@@ -566,6 +567,12 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
             {resource.comments_count} Comment{resource.comments_count !== 1 ? 's' : ''}
           </Text>
         </TouchableOpacity>
+        
+        <ReportButton 
+          contentType="resource" 
+          contentId={resource.id}
+          style={styles.actionButton}
+        />
       </View>
 
       {/* Comments Section */}
@@ -635,33 +642,43 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                     </Text>
                   </View>
                   
-                  {/* Action buttons for comment owner or admin */}
-                  {user && (comment.user_id === user.id || user.role === 'admin') && (
-                    <View style={styles.commentActions}>
-                      {/* Edit Button for comment owner only */}
-                      {comment.user_id === user.id && editingComment !== comment.id && (
-                        <TouchableOpacity 
-                          style={styles.commentEditButton}
-                          onPress={() => startEditComment(comment.id, comment.message)}
-                        >
-                          <Ionicons name="pencil-outline" size={16} color="#4f46e5" />
-                        </TouchableOpacity>
-                      )}
-                      
-                      {/* Delete Button for comment owner or admin */}
-                      <TouchableOpacity 
-                        style={styles.commentDeleteButton}
-                        onPress={() => confirmDeleteComment(comment.id)}
-                        disabled={deletingComment === comment.id}
-                      >
-                        {deletingComment === comment.id ? (
-                          <ActivityIndicator size="small" color="#ef4444" />
-                        ) : (
-                          <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                  {/* Action buttons */}
+                  <View style={styles.commentActions}>
+                    {/* Report Button for all users */}
+                    <ReportButton 
+                      contentType="comment" 
+                      contentId={comment.id}
+                      size="small"
+                    />
+                    
+                    {/* Edit/Delete buttons for comment owner or admin */}
+                    {user && (comment.user_id === user.id || user.role === 'admin') && (
+                      <>
+                        {/* Edit Button for comment owner only */}
+                        {comment.user_id === user.id && editingComment !== comment.id && (
+                          <TouchableOpacity 
+                            style={styles.commentEditButton}
+                            onPress={() => startEditComment(comment.id, comment.message)}
+                          >
+                            <Ionicons name="pencil-outline" size={16} color="#4f46e5" />
+                          </TouchableOpacity>
                         )}
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                        
+                        {/* Delete Button for comment owner or admin */}
+                        <TouchableOpacity 
+                          style={styles.commentDeleteButton}
+                          onPress={() => confirmDeleteComment(comment.id)}
+                          disabled={deletingComment === comment.id}
+                        >
+                          {deletingComment === comment.id ? (
+                            <ActivityIndicator size="small" color="#ef4444" />
+                          ) : (
+                            <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                          )}
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
                 </View>
                 
                 {/* Comment content or edit interface */}
@@ -764,33 +781,43 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                             </Text>
                           </View>
                           
-                          {/* Action buttons for reply owner or admin */}
-                          {user && (reply.user_id === user.id || user.role === 'admin') && (
-                            <View style={styles.commentActions}>
-                              {/* Edit Button for reply owner only */}
-                              {reply.user_id === user.id && editingComment !== reply.id && (
-                                <TouchableOpacity 
-                                  style={styles.commentEditButton}
-                                  onPress={() => startEditComment(reply.id, reply.message)}
-                                >
-                                  <Ionicons name="pencil-outline" size={14} color="#4f46e5" />
-                                </TouchableOpacity>
-                              )}
-                              
-                              {/* Delete Button for reply owner or admin */}
-                              <TouchableOpacity 
-                                style={styles.commentDeleteButton}
-                                onPress={() => confirmDeleteComment(reply.id)}
-                                disabled={deletingComment === reply.id}
-                              >
-                                {deletingComment === reply.id ? (
-                                  <ActivityIndicator size="small" color="#ef4444" />
-                                ) : (
-                                  <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                          {/* Action buttons */}
+                          <View style={styles.commentActions}>
+                            {/* Report Button for all users */}
+                            <ReportButton 
+                              contentType="comment" 
+                              contentId={reply.id}
+                              size="small"
+                            />
+                            
+                            {/* Edit/Delete buttons for reply owner or admin */}
+                            {user && (reply.user_id === user.id || user.role === 'admin') && (
+                              <>
+                                {/* Edit Button for reply owner only */}
+                                {reply.user_id === user.id && editingComment !== reply.id && (
+                                  <TouchableOpacity 
+                                    style={styles.commentEditButton}
+                                    onPress={() => startEditComment(reply.id, reply.message)}
+                                  >
+                                    <Ionicons name="pencil-outline" size={14} color="#4f46e5" />
+                                  </TouchableOpacity>
                                 )}
-                              </TouchableOpacity>
-                            </View>
-                          )}
+                                
+                                {/* Delete Button for reply owner or admin */}
+                                <TouchableOpacity 
+                                  style={styles.commentDeleteButton}
+                                  onPress={() => confirmDeleteComment(reply.id)}
+                                  disabled={deletingComment === reply.id}
+                                >
+                                  {deletingComment === reply.id ? (
+                                    <ActivityIndicator size="small" color="#ef4444" />
+                                  ) : (
+                                    <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                                  )}
+                                </TouchableOpacity>
+                              </>
+                            )}
+                          </View>
                         </View>
                         
                         {/* Reply content or edit interface */}

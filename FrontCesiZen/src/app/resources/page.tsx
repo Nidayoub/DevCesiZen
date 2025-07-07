@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import MainLayout from '../../components/MainLayout';
+import ReportButton from '../../components/ReportButton';
 import { infoResourcesApi } from '../../services/api.service';
 import { useAuth } from '../../context/AuthContext';
 
@@ -91,8 +92,8 @@ export default function ResourcesPage() {
         {!loading && !error && resources.length > 0 && (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {resources.map((resource) => (
-              <Link key={resource.id} href={`/info/resources/${resource.id}`} className="block group">
-                <div className="h-full flex flex-col overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <div key={resource.id} className="h-full flex flex-col overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+                <Link href={`/info/resources/${resource.id}`} className="flex-1 block group">
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-indigo-700 group-hover:text-indigo-800 mb-2">{resource.title}</h3>
                     <p className="text-sm text-gray-600 mb-1">
@@ -117,8 +118,19 @@ export default function ResourcesPage() {
                       Lire la ressource &rarr;
                     </span>
                   </div>
+                </Link>
+                
+                {/* Bouton de signalement de la ressource */}
+                <div className="px-6 pb-4">
+                  <div className="flex justify-end">
+                    <ReportButton 
+                      contentType="resource" 
+                      contentId={resource.id} 
+                      className="text-xs"
+                    />
+                  </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

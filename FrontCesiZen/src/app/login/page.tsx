@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import MainLayout from '../../components/MainLayout';
@@ -8,7 +8,8 @@ import StyledInput from '../../components/StyledInput';
 import { useAuth } from '../../context/AuthContext';
 import { LoginCredentials } from '../../types/user';
 
-export default function LoginPage() {
+// Composant qui utilise useSearchParams, enveloppé dans Suspense
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, loading } = useAuth();
@@ -39,7 +40,7 @@ export default function LoginPage() {
     
     // Validation de l'email
     if (!credentials.email.trim()) {
-      newErrors.email = 'L\'email est requis';
+      newErrors.email = 'L&#39;email est requis';
       isValid = false;
     }
     
@@ -132,7 +133,7 @@ export default function LoginPage() {
       } else {
         setResendStatus({
           loading: false,
-          error: data.error || 'Erreur lors de l\'envoi de l\'email de vérification'
+          error: data.error || 'Erreur lors de l&#39;envoi de l&#39;email de vérification'
         });
       }
     } catch (error) {
@@ -183,7 +184,7 @@ export default function LoginPage() {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-blue-700">Vous n'avez pas reçu l'email de vérification ?</p>
+                    <p className="text-sm text-blue-700">Vous n&#39;avez pas reçu l&#39;email de vérification ?</p>
                   </div>
                 </div>
                 
@@ -210,7 +211,7 @@ export default function LoginPage() {
                         </svg>
                         Envoi en cours...
                       </>
-                    ) : 'Renvoyer l\'email de vérification'}
+                    ) : 'Renvoyer l&#39;email de vérification'}
                   </button>
                 )}
               </div>
@@ -283,5 +284,42 @@ export default function LoginPage() {
         </div>
       </div>
     </MainLayout>
+  );
+}
+
+// Composant de chargement
+function LoginLoading() {
+  return (
+    <MainLayout>
+      <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Connectez-vous à votre compte</h2>
+          <p className="mt-2 text-center text-sm text-gray-600">Chargement...</p>
+        </div>
+
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="flex justify-center items-center h-32">
+              <div className="text-center">
+                <svg className="animate-spin h-8 w-8 text-indigo-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-gray-600">Chargement de la page de connexion...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+// Composant principal avec Suspense
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginForm />
+    </Suspense>
   );
 } 

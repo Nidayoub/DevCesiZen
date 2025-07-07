@@ -89,20 +89,38 @@ const SimpleMediaPicker: React.FC<SimpleMediaPickerProps> = ({
     try {
       setUploading(true);
       
-      // Simuler un upload réussi pour l'instant
-      const mockUpload = {
-        type: selectedFile.type?.includes('video') ? 'video' : 'image',
-        url: selectedFile.uri,
-        filename: selectedFile.name
+      // Convertir l'image/vidéo en base64
+      const response = await fetch(selectedFile.uri);
+      const blob = await response.blob();
+      
+      // Convertir le blob en base64
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      
+      reader.onload = () => {
+        const base64Data = reader.result as string;
+        
+        const mediaUpload = {
+          type: selectedFile.type?.includes('video') ? 'video' : 'image',
+          content: base64Data,
+          filename: selectedFile.name
+        };
+        
+        console.log('🎯 Media upload data (base64):', { ...mediaUpload, content: 'BASE64_DATA_TRUNCATED' });
+        onUploadComplete(mediaUpload);
+        Alert.alert('Succès', 'Média converti en base64 avec succès!');
+        setUploading(false);
       };
       
-      console.log('🎯 Media upload data:', mockUpload);
-      onUploadComplete(mockUpload);
-      Alert.alert('Succès', 'Média sélectionné avec succès!');
+      reader.onerror = () => {
+        console.error('Erreur conversion base64');
+        Alert.alert('Erreur', 'Impossible de convertir le média');
+        setUploading(false);
+      };
+      
     } catch (error) {
       console.error('Erreur upload média:', error);
-      Alert.alert('Erreur', 'Impossible d\'uploader le média');
-    } finally {
+      Alert.alert('Erreur', 'Impossible de traiter le média');
       setUploading(false);
     }
   };

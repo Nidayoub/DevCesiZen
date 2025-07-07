@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import MainLayout from '../../../components/MainLayout';
+import ReportButton from '../../../components/ReportButton';
 import { infoApi } from '../../../services/api.service';
 import { InfoPage } from '../../../types';
 
@@ -129,6 +130,16 @@ export default function InfoDetailPage() {
                   <ReactMarkdown>{pageInfo.content}</ReactMarkdown>
                 </div>
                 
+                <div className="border-t border-gray-200 px-4 py-3 sm:px-6">
+                  <div className="flex justify-end">
+                    <ReportButton 
+                      contentType="resource" 
+                      contentId={pageInfo.id} 
+                      className="text-xs"
+                    />
+                  </div>
+                </div>
+                
                 <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                   <div className="flex justify-between items-center">
                     <Link
@@ -154,7 +165,7 @@ export default function InfoDetailPage() {
           ) : (
             <div className="text-center py-10">
               <h3 className="mt-2 text-base font-semibold text-gray-900">Article non trouvé</h3>
-              <p className="mt-1 text-sm text-gray-500">L'article que vous cherchez n'existe pas ou a été supprimé.</p>
+              <p className="mt-1 text-sm text-gray-500">L&#39;article que vous cherchez n&#39;existe pas ou a été supprimé.</p>
               <div className="mt-6">
                 <Link
                   href="/info"
