@@ -26,16 +26,20 @@ class DatabaseConnection {
       const dbPath = process.env.DB_PATH || 'cesi-zen.db';
       console.log(`📊 Chemin de la base de données: ${dbPath}`);
       
-      // Vérifiez si le répertoire existe, sinon créez-le
+      // Vérifiez si le répertoire existe, sinon créez-le (seulement pour les chemins absolus)
       const fs = require('fs');
       const path = require('path');
       const dbDir = path.dirname(dbPath);
       console.log(`📊 Répertoire de la DB: ${dbDir}`);
-      console.log(`📊 Le répertoire existe: ${fs.existsSync(dbDir)}`);
       
-      if (!fs.existsSync(dbDir)) {
+      // Ne créer le répertoire que si ce n'est pas le répertoire courant et qu'il n'existe pas
+      if (dbDir !== '.' && dbDir !== './' && !fs.existsSync(dbDir)) {
         fs.mkdirSync(dbDir, { recursive: true });
         console.log(`📊 Répertoire créé: ${dbDir}`);
+      } else if (dbDir === '.' || dbDir === './') {
+        console.log(`📊 Utilisation du répertoire courant`);
+      } else {
+        console.log(`📊 Le répertoire existe déjà`);
       }
       
       this.db = new Database(dbPath);
@@ -229,6 +233,43 @@ export async function initDatabase() {
       points INTEGER NOT NULL,
       category TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Table des questions de diagnostic (structure alternative pour compatibilité)
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS diagnostic_questions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      points INTEGER NOT NULL,
+      category_id INTEGER,
+      order_num INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    )
+  `);
+
+  // Table des catégories de diagnostic
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS diagnostic_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Table des résultats de diagnostic
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS diagnostic_results (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      score INTEGER NOT NULL,
+      stress_level TEXT NOT NULL,
+      selected_questions TEXT, -- JSON array des IDs des questions sélectionnées
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `);
 
@@ -506,5 +547,78 @@ export async function initDatabase() {
       );
     }
     console.log('📦 Événements de stress par défaut créés');
+  }
+  
+  // Initialiser les catégories de diagnostic si elles n'existent pas
+  const diagnosticCategoriesCount = await db.queryOne('SELECT COUNT(*) as count FROM diagnostic_categories');
+  if (diagnosticCategoriesCount && diagnosticCategoriesCount.count === 0) {
+    console.log('📦 Initialisation des catégories de diagnostic...');
+    
+    const diagnosticCategories = [
+      { name: 'Événements majeurs', description: 'Événements de vie majeurs ayant un impact significatif' },
+      { name: 'Travail', description: 'Événements liés au travail et à la carrière' },
+      { name: 'Famille', description: 'Événements familiaux et relationnels' },
+      { name: 'Santé', description: 'Événements liés à la santé physique et mentale' },
+      { name: 'Finances', description: 'Événements financiers et économiques' },
+      { name: 'Logement', description: 'Changements de logement et d\'environnement' },
+      { name: 'Social', description: 'Événements sociaux et communautaires' },
+      { name: 'Personnel', description: 'Développement et changements personnels' },
+      { name: 'Émotions', description: 'États émotionnels et psychologiques' }
+    ];
+    
+    for (const category of diagnosticCategories) {
+      await db.execute(
+        'INSERT INTO diagnostic_categories (name, description) VALUES (?, ?)',
+        [category.name, category.description]
+      );
+    }
+    console.log('📦 Catégories de diagnostic créées');
+  }
+  
+  // Initialiser les questions de diagnostic basées sur stress_events
+  const diagnosticQuestionsCount = await db.queryOne('SELECT COUNT(*) as count FROM diagnostic_questions');
+  if (diagnosticQuestionsCount && diagnosticQuestionsCount.count === 0) {
+    console.log('📦 Copie des stress_events vers diagnostic_questions...');
+    
+    // Récupérer toutes les données de stress_events
+    const stressEvents = await db.query('SELECT * FROM stress_events ORDER BY id');
+    
+    // Créer un mapping des catégories
+    const categoryMapping: { [key: string]: number } = {};
+    const categories = await db.query('SELECT * FROM diagnostic_categories');
+    for (const cat of categories) {
+      categoryMapping[cat.name] = cat.id;
+    }
+    
+    // Insérer dans diagnostic_questions
+    let orderNum = 1;
+    for (const event of stressEvents) {
+      // Mapper la catégorie de stress_events vers diagnostic_categories
+      let categoryId = categoryMapping['Personnel']; // défaut
+      
+      if (event.category === 'Familial' || event.category === 'Famille') {
+        categoryId = categoryMapping['Famille'];
+      } else if (event.category === 'Professionnel' || event.category === 'Travail') {
+        categoryId = categoryMapping['Travail'];
+      } else if (event.category === 'Santé') {
+        categoryId = categoryMapping['Santé'];
+      } else if (event.category === 'Financier' || event.category === 'Finances') {
+        categoryId = categoryMapping['Finances'];
+      } else if (event.category === 'Social') {
+        categoryId = categoryMapping['Social'];
+      } else if (event.category === 'Émotions') {
+        categoryId = categoryMapping['Émotions'];
+      } else if (event.category === 'Logement') {
+        categoryId = categoryMapping['Logement'];
+      }
+      
+      await db.execute(
+        'INSERT INTO diagnostic_questions (title, description, points, category_id, order_num) VALUES (?, ?, ?, ?, ?)',
+        [event.event_text, event.event_text, event.points, categoryId, orderNum]
+      );
+      orderNum++;
+    }
+    
+    console.log('📦 Questions de diagnostic initialisées depuis stress_events');
   }
 } 
