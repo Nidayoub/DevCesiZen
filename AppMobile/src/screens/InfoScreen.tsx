@@ -118,11 +118,17 @@ const InfoScreen: React.FC<InfoScreenProps> = ({ navigation }) => {
           
           <View style={styles.resourceMeta}>
             <Text style={styles.resourceDate}>
-              {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                                      {(() => {
+                          const date = new Date(item.created_at);
+                          const offset = date.getTimezoneOffset();
+                          const frenchOffset = -60;
+                          const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                          return adjustedDate.toLocaleDateString('fr-FR');
+                        })()}
             </Text>
             <View style={styles.resourceStats}>
               <Text style={styles.statText}>{item.views_count} vues</Text>
-              <Text style={styles.statText}>{item.likes_count} likes</Text>
+                                    <Text style={styles.statText}>{item.likes_count} like{item.likes_count !== 1 ? 's' : ''}</Text>
             </View>
           </View>
         </View>

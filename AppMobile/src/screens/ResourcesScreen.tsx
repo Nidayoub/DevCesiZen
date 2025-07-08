@@ -84,7 +84,13 @@ const ResourcesScreen: React.FC<ResourcesScreenProps> = ({ navigation }) => {
           {item.description || item.summary}
         </Text>
         <Text style={styles.dateText}>
-          {new Date(item.created_at || item.publication_date).toLocaleDateString('fr-FR')}
+                          {(() => {
+                  const date = new Date(item.created_at || item.publication_date);
+                  const offset = date.getTimezoneOffset();
+                  const frenchOffset = -60;
+                  const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                  return adjustedDate.toLocaleDateString('fr-FR');
+                })()}
         </Text>
       </TouchableOpacity>
       

@@ -94,11 +94,17 @@ const InfoDetailsScreen: React.FC<InfoDetailsScreenProps> = ({ navigation, route
         
         <View style={styles.meta}>
           <Text style={styles.metaText}>
-            {new Date(resource.created_at).toLocaleDateString('fr-FR')}
+                              {(() => {
+                    const date = new Date(resource.created_at);
+                    const offset = date.getTimezoneOffset();
+                    const frenchOffset = -60;
+                    const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                    return adjustedDate.toLocaleDateString('fr-FR');
+                  })()}
           </Text>
           <View style={styles.stats}>
             <Text style={styles.statText}>{resource.views_count} vues</Text>
-            <Text style={styles.statText}>{resource.likes_count} likes</Text>
+                            <Text style={styles.statText}>{resource.likes_count} like{resource.likes_count !== 1 ? 's' : ''}</Text>
           </View>
         </View>
         

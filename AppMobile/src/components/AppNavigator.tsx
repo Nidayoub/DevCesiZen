@@ -25,6 +25,8 @@ import DiagnosticHistoryScreen from '../screens/DiagnosticHistoryScreen';
 import DiagnosticStatsScreen from '../screens/DiagnosticStatsScreen';
 import CreateResourceScreen from '../screens/CreateResourceScreen';
 import EditResourceScreen from '../screens/EditResourceScreen';
+import TermsScreen from '../screens/TermsScreen';
+import PrivacyScreen from '../screens/PrivacyScreen';
 
 import { RootStackParamList } from '../types/navigation';
 
@@ -225,6 +227,18 @@ const AppStack = () => {
         name="EditResource" 
         component={EditResourceScreen} 
         options={{ title: 'Modifier la ressource' }} 
+      />
+      
+      {/* Écrans légaux */}
+      <Stack.Screen 
+        name="Terms" 
+        component={TermsScreen} 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="Privacy" 
+        component={PrivacyScreen} 
+        options={{ headerShown: false }} 
       />
     </Stack.Navigator>
   );

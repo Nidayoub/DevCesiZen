@@ -244,17 +244,33 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
     }
 
     try {
+      console.log('Suppression du commentaire', commentId, 'pour la ressource', id);
       setDeletingComment(commentId);
-      await infoResourcesApi.deleteComment(id, commentId);
+      
+      const response = await infoResourcesApi.deleteComment(id, commentId);
+      console.log('Réponse de suppression:', response);
       
       // Reload comments to update the list
       await loadComments();
       
       // Reload resource to get updated comment count (important car la suppression peut inclure des réponses)
       await loadResource();
-    } catch (err) {
+      
+      Alert.alert('Succès', 'Commentaire supprimé avec succès.');
+    } catch (err: any) {
       console.error('Error deleting comment:', err);
-      Alert.alert('Erreur', 'Impossible de supprimer le commentaire. Veuillez réessayer.');
+      console.error('Error response:', err.response?.data);
+      
+      let errorMessage = 'Impossible de supprimer le commentaire.';
+      if (err.response?.status === 403) {
+        errorMessage = 'Vous n\'avez pas l\'autorisation de supprimer ce commentaire.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Commentaire introuvable.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+      
+      Alert.alert('Erreur', errorMessage);
     } finally {
       setDeletingComment(null);
     }
@@ -412,9 +428,13 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR');
+      // Ajuster pour le fuseau horaire français (UTC+1/+2)
+      const offset = date.getTimezoneOffset();
+      const frenchOffset = -60; // UTC+1 (ou -120 pour UTC+2 en été)
+      const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+      return adjustedDate.toLocaleDateString('fr-FR');
     } catch (e) {
-      return 'Unknown date';
+      return 'Date inconnue';
     }
   };
 
@@ -550,21 +570,21 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
           />
           )}
           <Text style={[styles.actionText, liked && styles.likedText]}>
-            {resource.likes_count} Like{resource.likes_count !== 1 ? 's' : ''}
+            {resource.likes_count} J'aime{resource.likes_count !== 1 ? 's' : ''}
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
           <Ionicons name="share-social-outline" size={20} color="#4f46e5" />
           <Text style={styles.actionText}>
-            {resource.shares} Share{resource.shares !== 1 ? 's' : ''}
+            {resource.shares} Partage{resource.shares !== 1 ? 's' : ''}
           </Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.actionButton}>
           <Ionicons name="chatbubble-outline" size={20} color="#4f46e5" />
           <Text style={styles.actionText}>
-            {resource.comments_count} Comment{resource.comments_count !== 1 ? 's' : ''}
+            {resource.comments_count} Commentaire{resource.comments_count !== 1 ? 's' : ''}
           </Text>
         </TouchableOpacity>
         
@@ -632,13 +652,19 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                       {comment.user_firstname} {comment.user_lastname}
                     </Text>
                     <Text style={styles.commentDate}>
-                      {new Date(comment.comment_date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {(() => {
+                        const date = new Date(comment.comment_date);
+                        const offset = date.getTimezoneOffset();
+                        const frenchOffset = -60;
+                        const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                        return adjustedDate.toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        });
+                      })()}
                     </Text>
                   </View>
                   
@@ -652,7 +678,7 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                     />
                     
                     {/* Edit/Delete buttons for comment owner or admin */}
-                    {user && (comment.user_id === user.id || user.role === 'admin') && (
+                    {user && (comment.user_id === user.id || user.role === 'admin' || user.role === 'super-admin') && (
                       <>
                         {/* Edit Button for comment owner only */}
                         {comment.user_id === user.id && editingComment !== comment.id && (
@@ -667,7 +693,11 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                         {/* Delete Button for comment owner or admin */}
                         <TouchableOpacity 
                           style={styles.commentDeleteButton}
-                          onPress={() => confirmDeleteComment(comment.id)}
+                          onPress={() => {
+                            console.log('Tentative de suppression du commentaire:', comment.id);
+                            console.log('User ID:', user.id, 'Comment User ID:', comment.user_id);
+                            confirmDeleteComment(comment.id);
+                          }}
                           disabled={deletingComment === comment.id}
                         >
                           {deletingComment === comment.id ? (
@@ -771,13 +801,19 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                               {reply.user_firstname} {reply.user_lastname}
                             </Text>
                             <Text style={styles.replyDate}>
-                              {new Date(reply.comment_date).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                              {(() => {
+                                const date = new Date(reply.comment_date);
+                                const offset = date.getTimezoneOffset();
+                                const frenchOffset = -60;
+                                const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                                return adjustedDate.toLocaleDateString('fr-FR', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                });
+                              })()}
                             </Text>
                           </View>
                           
@@ -791,7 +827,7 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                             />
                             
                             {/* Edit/Delete buttons for reply owner or admin */}
-                            {user && (reply.user_id === user.id || user.role === 'admin') && (
+                            {user && (reply.user_id === user.id || user.role === 'admin' || user.role === 'super-admin') && (
                               <>
                                 {/* Edit Button for reply owner only */}
                                 {reply.user_id === user.id && editingComment !== reply.id && (
@@ -806,7 +842,11 @@ const ResourceDetailsScreen: React.FC<ResourceDetailsScreenProps> = ({ route, na
                                 {/* Delete Button for reply owner or admin */}
                                 <TouchableOpacity 
                                   style={styles.commentDeleteButton}
-                                  onPress={() => confirmDeleteComment(reply.id)}
+                                  onPress={() => {
+                                    console.log('Tentative de suppression de la réponse:', reply.id);
+                                    console.log('User ID:', user.id, 'Reply User ID:', reply.user_id);
+                                    confirmDeleteComment(reply.id);
+                                  }}
                                   disabled={deletingComment === reply.id}
                                 >
                                   {deletingComment === reply.id ? (

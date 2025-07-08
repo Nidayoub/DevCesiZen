@@ -188,7 +188,13 @@ const DiagnosticScreen: React.FC<DiagnosticScreenProps> = ({ navigation }) => {
     <View style={styles.historyItem}>
       <View style={styles.historyHeader}>
         <Text style={styles.historyDate}>
-          {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                                {(() => {
+                        const date = new Date(item.created_at);
+                        const offset = date.getTimezoneOffset();
+                        const frenchOffset = -60;
+                        const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                        return adjustedDate.toLocaleDateString('fr-FR');
+                      })()}
         </Text>
         <View style={styles.scoreBadge}>
           <Text style={styles.scoreText}>{item.score} pts</Text>

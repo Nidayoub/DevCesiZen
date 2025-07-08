@@ -388,9 +388,11 @@ export async function initDatabase() {
       info_resource_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
       message TEXT NOT NULL,
+      parent_id INTEGER DEFAULT NULL,
       comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (info_resource_id) REFERENCES info_resources(id) ON DELETE CASCADE,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (parent_id) REFERENCES info_resources_comments(id) ON DELETE CASCADE
     )
   `);
 
@@ -487,6 +489,19 @@ export async function initDatabase() {
     }
   } catch (error) {
     console.log('📦 Colonnes media déjà présentes ou erreur de migration:', error);
+  }
+
+  // MIGRATION: Ajouter la colonne parent_id à info_resources_comments si elle n'existe pas
+  try {
+    const commentsTableInfo = await db.query(`PRAGMA table_info(info_resources_comments)`);
+    const commentsColumns = commentsTableInfo.map((col: any) => col.name);
+    
+    if (!commentsColumns.includes('parent_id')) {
+      await db.execute(`ALTER TABLE info_resources_comments ADD COLUMN parent_id INTEGER DEFAULT NULL`);
+      console.log('📦 Colonne parent_id ajoutée à info_resources_comments');
+    }
+  } catch (error) {
+    console.log('📦 Colonne parent_id déjà présente ou erreur de migration:', error);
   }
   
   // Vérifier et initialiser les événements de stress s'ils n'existent pas

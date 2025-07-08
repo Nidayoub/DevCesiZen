@@ -146,7 +146,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               diagnosticHistory.map((item) => (
                 <View key={item.id} style={styles.historyItem}>
                   <Text style={styles.historyDate}>
-                    {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                    {(() => {
+                    const date = new Date(item.created_at);
+                    const offset = date.getTimezoneOffset();
+                    const frenchOffset = -60;
+                    const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+                    return adjustedDate.toLocaleDateString('fr-FR');
+                  })()}
                   </Text>
                   <View style={styles.historyDetails}>
                     <Text style={styles.historyCategory}>{item.result_category}</Text>

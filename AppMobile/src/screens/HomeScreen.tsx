@@ -26,9 +26,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handlePrimaryAction = () => {
     if (isAuthenticated) {
-      // Si l'utilisateur est connecté, il devrait être automatiquement sur l'AuthenticatedStack
-      // Mais au cas où, nous naviguons vers Main (TabNavigator)
-      navigation.navigate('Main');
+      // Si l'utilisateur est connecté, naviguer vers le tableau de bord
+      navigation.navigate('Dashboard');
     } else {
       navigation.navigate('Diagnostic');
     }
@@ -120,7 +119,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             style={[styles.featureCard, !isAuthenticated && styles.featureCardDisabled]}
             onPress={() => {
               if (isAuthenticated) {
-                navigation.navigate('Main');
+                navigation.navigate('Dashboard');
               } else {
                 navigation.navigate('Login');
               }
