@@ -158,11 +158,7 @@ export default function DiagnosticPage() {
       return; // Arrêter l'exécution ici
     }
 
-    if (!isAuthenticated) {
-      setError("Vous n&#39;êtes pas authentifié. Veuillez vous connecter et réessayer.");
-      setLoading(false); // Assurez-vous que l'état de chargement est réinitialisé
-      return; // Arrêter l'exécution ici
-    }
+    // Le diagnostic peut être fait anonymement, pas besoin de bloquer
 
     try {
       setLoading(true); // Maintenant, nous pouvons mettre loading à true

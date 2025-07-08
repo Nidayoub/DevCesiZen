@@ -18,11 +18,11 @@ export async function diagnosticRoutes(req: Request): Promise<Response> {
 
   // POST /api/diagnostic/submit - Soumettre un diagnostic et obtenir un score
   if (path === "/api/diagnostic/submit" && method === "POST") {
-    // Exiger l'authentification pour soumettre et donc sauvegarder
+    // Essayer d'identifier l'utilisateur s'il est connecté, mais permettre l'usage anonyme
     const authResponse = await authMiddleware(req);
-    if (authResponse) return authResponse; // Bloquer si non authentifié
+    // Si authResponse est null, l'utilisateur est authentifié et req.userId est défini
+    // Si authResponse est une Response, l'auth a échoué mais on continue quand même (usage anonyme)
     
-    // Si on arrive ici, l'utilisateur est authentifié et req.userId est défini par authMiddleware
     return diagnosticController.submitDiagnostic(req);
   }
 

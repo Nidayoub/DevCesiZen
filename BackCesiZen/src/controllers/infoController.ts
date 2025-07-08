@@ -870,7 +870,16 @@ export class InfoController {
       
       // Récupérer l'utilisateur connecté
       const userId = (req as any).userId;
-      const isAdmin = (req as any).userRole === 'admin';
+      
+      // Vérifier si l'utilisateur est admin
+      let isAdmin = false;
+      try {
+        const { UserModel } = await import('../models/User');
+        const user = await UserModel.findById(userId);
+        isAdmin = user && (user.role === 'admin' || user.role === 'super-admin');
+      } catch (error) {
+        console.error('Erreur lors de la vérification du rôle admin:', error);
+      }
       
       // Supprimer le commentaire
       const success = await this.infoModel.deleteInfoResourceComment(commentId, userId, isAdmin);
@@ -937,7 +946,16 @@ export class InfoController {
       
       // Récupérer l'utilisateur connecté
       const userId = (req as any).userId;
-      const isAdmin = (req as any).userRole === 'admin';
+      
+      // Vérifier si l'utilisateur est admin
+      let isAdmin = false;
+      try {
+        const { UserModel } = await import('../models/User');
+        const user = await UserModel.findById(userId);
+        isAdmin = user && (user.role === 'admin' || user.role === 'super-admin');
+      } catch (error) {
+        console.error('Erreur lors de la vérification du rôle admin:', error);
+      }
       
       // Modifier le commentaire
       const updatedComment = await this.infoModel.updateInfoResourceComment(commentId, userId, message.trim(), isAdmin);
