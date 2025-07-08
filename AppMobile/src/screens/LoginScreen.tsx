@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import COLORS from '../constants/colors';
 
@@ -24,8 +25,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
     try {
       await login({ email, password });
-      // Navigation will happen automatically due to conditional rendering in AppNavigator
-      // No manual navigation needed
+      // Rediriger vers la page d'accueil après connexion réussie
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        })
+      );
     } catch (err) {
       // Error is already handled by the auth context
       console.log('Login failed');

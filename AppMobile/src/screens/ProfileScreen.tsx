@@ -83,21 +83,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <Text style={styles.infoValue}>{user?.email}</Text>
         </View>
         
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Rôle</Text>
-          <Text style={styles.infoValue}>
-            {user?.role === 'user' && 'Utilisateur'}
-            {user?.role === 'admin' && 'Administrateur'}
-            {user?.role === 'super-admin' && 'Super Administrateur'}
-          </Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Compte vérifié</Text>
-          <Text style={styles.infoValue}>
-            {user?.is_verified ? 'Oui' : 'Non'}
-          </Text>
-        </View>
+
       </View>
 
       <View style={styles.section}>
@@ -121,28 +107,21 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
         
+
+        
         <TouchableOpacity 
           style={styles.menuItem}
-          onPress={() => navigation.navigate('DiagnosticStats')}
+          onPress={() => navigation.navigate('Terms')}
         >
-          <Ionicons name="stats-chart-outline" size={24} color="#10b981" />
-          <Text style={styles.menuItemText}>Statistiques des diagnostics</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="settings-outline" size={24} color="#4f46e5" />
-          <Text style={styles.menuItemText}>Paramètres</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="document-text-outline" size={24} color="#4f46e5" />
           <Text style={styles.menuItemText}>Conditions générales</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Privacy')}
+        >
           <Ionicons name="shield-outline" size={24} color="#4f46e5" />
           <Text style={styles.menuItemText}>Politique de confidentialité</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />

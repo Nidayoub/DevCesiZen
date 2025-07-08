@@ -32,6 +32,10 @@ export type RootStackParamList = {
   LikedResources: undefined;
   CreateResource: undefined;
   EditResource: { resourceId: number };
+  
+  // Écrans légaux
+  Terms: undefined;
+  Privacy: undefined;
 };
 
 // Type pour la navigation par onglets

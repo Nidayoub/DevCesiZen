@@ -15,17 +15,15 @@ export class DiagnosticController {
    */
   async getQuestions(req: Request): Promise<Response> {
     try {
-      // Récupérer les questions avec leurs catégories depuis la BDD
+      // Récupérer les questions directement depuis stress_events comme en dev
       const events = await db.query(`
         SELECT 
-          dq.id,
-          dq.title,
-          dq.points,
-          dq.category_id,
-          dc.name as category
-        FROM diagnostic_questions dq
-        LEFT JOIN diagnostic_categories dc ON dq.category_id = dc.id
-        ORDER BY dc.name, dq.points DESC
+          id,
+          event_text as title,
+          points,
+          category
+        FROM stress_events
+        ORDER BY category, points DESC
       `);
       
       return new Response(JSON.stringify({ 
@@ -80,10 +78,10 @@ export class DiagnosticController {
         });
       }
       
-      // Récupérer les événements sélectionnés avec leurs points depuis diagnostic_questions
+      // Récupérer les événements sélectionnés avec leurs points depuis stress_events
       const placeholders = selectedEventIds.map(() => '?').join(',');
       const selectedEvents = await db.query(
-        `SELECT id, title, points FROM diagnostic_questions WHERE id IN (${placeholders})`,
+        `SELECT id, event_text as title, points FROM stress_events WHERE id IN (${placeholders})`,
         selectedEventIds
       );
       
@@ -184,39 +182,43 @@ export class DiagnosticController {
         });
       }
       
-      // Utiliser la table diagnostic_questions avec les catégories de la BDD
+      // Utiliser la table stress_events avec des catégories texte
       for (const event of events) {
         // Vérifier que l'événement a tous les champs nécessaires
         if (!event.title || typeof event.points !== 'number') {
           continue;
         }
         
-        if (event.id) {
+        // Convertir category_id en nom de catégorie si nécessaire
+        let categoryName = 'Personnel'; // défaut
+        if (event.category) {
+          categoryName = event.category;
+        }
+        
+        if (event.id && event.id > 0) {
           // Mettre à jour une question existante
           await db.execute(
-            'UPDATE diagnostic_questions SET title = ?, points = ?, category_id = ? WHERE id = ?',
-            [event.title, event.points, event.category_id || null, event.id]
+            'UPDATE stress_events SET event_text = ?, points = ?, category = ? WHERE id = ?',
+            [event.title, event.points, categoryName, event.id]
           );
         } else {
           // Créer une nouvelle question
           await db.execute(
-            'INSERT INTO diagnostic_questions (title, points, category_id) VALUES (?, ?, ?)',
-            [event.title, event.points, event.category_id || null]
+            'INSERT INTO stress_events (event_text, points, category) VALUES (?, ?, ?)',
+            [event.title, event.points, categoryName]
           );
         }
       }
       
-      // Récupérer la liste mise à jour avec les catégories
+      // Récupérer la liste mise à jour depuis stress_events
       const updatedEvents = await db.query(`
         SELECT 
-          dq.id,
-          dq.title,
-          dq.points,
-          dq.category_id,
-          dc.name as category
-        FROM diagnostic_questions dq
-        LEFT JOIN diagnostic_categories dc ON dq.category_id = dc.id
-        ORDER BY dc.name, dq.points DESC
+          id,
+          event_text as title,
+          points,
+          category
+        FROM stress_events
+        ORDER BY category, points DESC
       `);
       
       return new Response(JSON.stringify({ 

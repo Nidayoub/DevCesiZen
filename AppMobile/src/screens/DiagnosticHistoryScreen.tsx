@@ -91,7 +91,11 @@ const DiagnosticHistoryScreen = () => {
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR', {
+      // Ajuster pour le fuseau horaire français (UTC+1/+2)
+      const offset = date.getTimezoneOffset();
+      const frenchOffset = -60; // UTC+1 (ou -120 pour UTC+2 en été)
+      const adjustedDate = new Date(date.getTime() + (frenchOffset - offset) * 60000);
+      return adjustedDate.toLocaleDateString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
