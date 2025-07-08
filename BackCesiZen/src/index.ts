@@ -9,7 +9,9 @@ await initDatabase();
 console.log("📦 Base de données initialisée avec succès");
 
 // Initialisation des données si nécessaire
-import "./utils/initData";
+const { initializeData } = await import("./utils/initData");
+await initializeData();
+console.log("📊 Données initialisées avec succès");
 
 // Configuration CORS dynamique
 const allowedOrigin = process.env.FRONTEND_URL;

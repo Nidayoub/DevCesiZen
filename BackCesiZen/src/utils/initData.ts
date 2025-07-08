@@ -403,7 +403,5 @@ async function initBreathingExercises() {
   }
 }
 
-// Exécuter l'initialisation
-initializeData().catch(error => {
-  console.error("Erreur lors de l'initialisation des données:", error);
-});
+// Exporter la fonction d'initialisation pour un appel manuel
+export { initializeData };
