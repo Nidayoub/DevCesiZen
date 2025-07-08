@@ -152,6 +152,7 @@ export class CommentController {
         // Vérifier si l'utilisateur est admin
         const adminError = await adminMiddleware(req);
         if (adminError) {
+          // L'utilisateur n'est ni l'auteur ni admin
           return new Response(JSON.stringify({ 
             error: 'Vous n\'êtes pas autorisé à supprimer ce commentaire' 
           }), {
@@ -159,7 +160,9 @@ export class CommentController {
             headers: { 'Content-Type': 'application/json' }
           });
         }
+        // Si adminError est null, l'utilisateur est admin et peut supprimer
       }
+      // Si comment.user_id === userId, l'utilisateur est l'auteur et peut supprimer
       
       await CommentModel.delete(commentId);
       
