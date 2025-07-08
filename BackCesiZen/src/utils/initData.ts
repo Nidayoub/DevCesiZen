@@ -19,9 +19,6 @@ async function initializeData() {
   const sessionModel = new SessionModel();
   const cleanedSessions = await sessionModel.cleanExpiredSessions();
   console.log(`${cleanedSessions} sessions expirées nettoyées`);
-
-  // Ajouter les colonnes média si nécessaire
-  await addMediaColumns();
   
   // Initialiser les catégories par défaut
   await initDefaultCategories();
