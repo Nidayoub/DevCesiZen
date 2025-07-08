@@ -45,7 +45,8 @@ async function initializeData() {
         password: "superadmin123", // À changer en production !
         firstname: "Super",
         lastname: "Admin",
-        role: "super-admin"
+        role: "super-admin",
+        is_verified: true // ✅ Ajouté pour permettre la connexion directe
       });
       
       console.log(`Compte super-admin créé: ${superAdmin.firstname} ${superAdmin.lastname} (${superAdmin.email})`);
@@ -56,7 +57,8 @@ async function initializeData() {
         password: "admin123", // À changer en production !
         firstname: "Admin",
         lastname: "CesiZen",
-        role: "admin"
+        role: "admin",
+        is_verified: true // ✅ Ajouté pour permettre la connexion directe
       });
 
       console.log(`Compte admin créé: ${admin.firstname} ${admin.lastname} (${admin.email})`);
@@ -357,14 +359,16 @@ async function initDefaultUser() {
   if (!testUser) {
     console.log('🌱 Création d\'un utilisateur de test...');
     
-    const hashedPassword = await bcrypt.hash('user123', 10);
+    const userTest = await UserModel.create({
+      email: 'user@cesizen.fr',
+      password: 'user123',
+      firstname: 'Utilisateur',
+      lastname: 'Test',
+      role: 'user',
+      is_verified: true // ✅ Ajouté pour permettre la connexion directe
+    });
     
-    await db.execute(
-      'INSERT INTO users (email, password, firstname, lastname, role) VALUES (?, ?, ?, ?, ?)',
-      ['user@cesizen.fr', hashedPassword, 'Utilisateur', 'Test', 'user']
-    );
-    
-    console.log('✅ Utilisateur de test créé avec succès');
+    console.log(`✅ Utilisateur de test créé avec succès: ${userTest.firstname} ${userTest.lastname} (${userTest.email})`);
   }
 }
 
@@ -376,7 +380,7 @@ async function initBreathingExercises() {
   const exerciseCount = await db.queryOne<{count: number}>('SELECT COUNT(*) as count FROM breathing_exercises');
   
   if (!exerciseCount || exerciseCount.count === 0) {
-    console.log('�� Initialisation des exercices de respiration...');
+    console.log(' Initialisation des exercices de respiration...');
     
     // Récupérer les exercices prédéfinis du modèle
     const breathingModel = new BreathingExerciseModel();

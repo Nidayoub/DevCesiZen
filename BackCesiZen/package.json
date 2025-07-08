@@ -11,7 +11,8 @@
     "build": "bun run build.ts",
     "setup-email": "node setup-email-config.js",
     "toggle-email-test": "node toggle-email-test-mode.js",
-    "rebuild-db": "node rebuild-database.cjs",
+    "setup-db": "node setup-database.js",
+    "reset-db": "node setup-database.js --reset",
     "add-resources": "node add-resources.cjs"
   },
   "dependencies": {

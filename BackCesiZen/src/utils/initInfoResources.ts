@@ -27,7 +27,7 @@ export async function initInfoResources() {
       const hashedPassword = await bcrypt.hash('admin123', 10);
       const result = await db.execute(
         "INSERT INTO users (email, password, firstname, lastname, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)",
-        ['admin@cesizen.com', hashedPassword, 'Admin', 'CesiZen', 'admin', 1]
+        ['admin@cesizen.fr', hashedPassword, 'Admin', 'CesiZen', 'admin', 1]
       );
       adminId = result.lastInsertId;
     }
