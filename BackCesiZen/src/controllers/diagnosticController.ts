@@ -22,9 +22,7 @@ export class DiagnosticController {
           dq.title,
           dq.points,
           dq.category_id,
-          dc.name as category,
-          dc.icon,
-          dc.color
+          dc.name as category
         FROM diagnostic_questions dq
         LEFT JOIN diagnostic_categories dc ON dq.category_id = dc.id
         ORDER BY dc.name, dq.points DESC
@@ -215,9 +213,7 @@ export class DiagnosticController {
           dq.title,
           dq.points,
           dq.category_id,
-          dc.name as category,
-          dc.icon,
-          dc.color
+          dc.name as category
         FROM diagnostic_questions dq
         LEFT JOIN diagnostic_categories dc ON dq.category_id = dc.id
         ORDER BY dc.name, dq.points DESC
