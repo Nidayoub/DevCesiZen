@@ -1,0 +1,25 @@
+stages:
+  - deploy
+
+variables:
+  VM_USER: "admin"
+  VM_IP: "ec2-16-170-242-12.eu-north-1.compute.amazonaws.com"
+
+before_script:
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | ssh-add - 
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Connecting to the VM and deploying the application..."
+    - ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP "
+        cd /home/$VM_USER/DevCesiZen &&
+        sudo docker-compose down &&
+        sudo docker system prune -af &&
+        git fetch &&
+        git pull &&
+        sudo docker-compose up --build -d"
+  only:
+    - main
